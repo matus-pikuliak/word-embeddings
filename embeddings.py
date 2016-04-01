@@ -2,20 +2,17 @@ from gensim.models import Word2Vec
 from scipy.spatial import distance
 
 top100k = set()
-with open('/media/piko/DATA/dp-data/wiki-100k.txt') as f:
+with open('./wiki-100k.txt') as f:
     for line in f:
         if not line.startswith('#'):
             top100k.add(line.strip())
-
-model = None
 model = Word2Vec.load_word2vec_format('/media/piko/DATA/dp-data/GoogleNews-vectors-negative300.bin', binary=True, selected_words=top100k)
-embeddings = dict()
 
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
 
-
+embeddings = dict()
 def emb(word=None, vector=None):
     if word not in embeddings:
         embeddings[word] = Embedding(word=word, vector=vector)
@@ -23,7 +20,6 @@ def emb(word=None, vector=None):
 
 
 class Embedding:
-
     def __init__(self, word=None, vector=None):
         if vector is None and word is None:
             raise KeyError('You have to state word or vector')
@@ -58,7 +54,6 @@ class Embedding:
 
 
 class Relation:
-
     def __init__(self, embedding_1, embedding_2, positive=False, candidate=False):
         self.e_1 = embedding_1
         self.e_2 = embedding_2
