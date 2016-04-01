@@ -1,3 +1,0 @@
-
-
-print model.vectors.shape
