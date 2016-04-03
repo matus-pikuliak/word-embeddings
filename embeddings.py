@@ -8,11 +8,19 @@ data_folder = '/media/piko/DATA/dp-data/python-files/'
 def file_path(filename):
     return '%s%s' % (data_folder, filename)
 
+
 def process_results(results):
     results = sorted(results, key=lambda x: -x[2])
     for i in xrange(len(results)):
         results[i][3] = i+1
-    print [x[3] for x in results if x[0]]
+    return [float(x[3])/len(results) for x in results if x[0]]
+
+
+def evaluate_results(results):
+    mean = np.mean(results)
+    std = np.std(results)
+    median = np.median(results)
+    return mean, std, median
 
 
 def evaluate_svm_files(timestamp, average=True, topn=None):
@@ -29,13 +37,16 @@ def evaluate_svm_files(timestamp, average=True, topn=None):
         for line in f:
             records[i][2] = float(line)
             i += 1
-    process_results(records)
+    return process_results(records)
 
 # SPRACUJE DATA SO SVM-ciek
 # for f in glob.glob('%s*' % data_folder):
 #     match = re.match('.*files/([0-9]*)-train.*', f)
 #     if match is not None:
-#         evaluate_svm_files(match.group(1))
+#         res = evaluate_svm_files(match.group(1))
+#         print evaluate_results(res)
+
+
 
 def svm_transform(l):
     return ' '.join(["%d:%f" % (i+1, l[i]) for i in xrange(len(l))])
@@ -132,7 +143,7 @@ class Relation:
         return len(self.rel_embedding)
 
     def word(self):
-        self.rel_embedding.word
+        return self.rel_embedding.word
 
     def cosine_similarity(self, relation):
         return self.rel_embedding.cosine_similarity(relation.rel_embedding)
@@ -175,6 +186,18 @@ class RelationSet:
         parted_slices = [self.part_slices(slices, i) for i in xrange(n)]
         return [(RelationSet(part[0]), RelationSet(part[1])) for part in parted_slices]
 
+    @staticmethod
+    def slice_list(l, n):
+        n = max(1, n)
+        return [l[i:i + n] for i in range(0, len(l), n)]
+
+    @staticmethod
+    def part_slices(slices, i):
+        testing_set = slices[i]
+        training_slices = slices[:i] + slices[i+1:]
+        training_set = flatten(training_slices)
+        return testing_set, training_set
+
     def spatial_candidates(self):
         return flatten([rel.spatial_candidates() for rel in self.relations])
 
@@ -206,67 +229,60 @@ class RelationSet:
             os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
             os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
 
-    def sim_measure_average(self):
-        for testing, training in self.testing_slices():
-            candidates = training.spatial_candidates()
-            results = list()
-            for rel in testing.relations + candidates:
-                positive = rel.positive
-                name = rel.word
-                similarities = [rel.cosine_similarity(x) for x in training.relations]
-                average_similarity = sum(similarities) / len(similarities)
-                results.append([positive, name, average_similarity, 0])
-            process_results(results)
-
-    def sim_measure_average_euclidean(self):
-        for testing, training in self.testing_slices():
-            candidates = training.spatial_candidates()
-            results = list()
-            for rel in testing.relations + candidates:
-                positive = rel.positive
-                name = rel.word
-                similarities = [rel.euclidean_similarity(x) for x in training.relations]
-                average_similarity = sum(similarities) / len(similarities)
-                results.append([positive, name, average_similarity, 0])
-            process_results(results)
-
-    def rel_weight(self, relation):
-        similarities = [relation.euclidean_similarity(rel) for rel in self.relations]
+    def rel_weight(self, relation, distance):
+        if distance == 'euclidean':
+            similarities = [relation.euclidean_similarity(rel) for rel in self.relations]
+        elif distance == 'cosine':
+            similarities = [relation.cosine_similarity(rel) for rel in self.relations]
+        else:
+            raise KeyError('Wrong distance parameter')
         return (sum(similarities) - 1) / (len(similarities) - 1)
 
     @staticmethod
-    def softmax(x):
-        return np.exp(x) / np.sum(np.exp(x), axis=0)
+    def softmax_list(l):
+        return np.exp(l) / np.sum(np.exp(l), axis=0)
 
-    def sim_measure_average_euclidean_softmax(self):
-        for testing, training in self.testing_slices():
-            candidates = training.spatial_candidates()
-            results = list()
-            weights = self.softmax([training.rel_weight(rel) for rel in training.relations])
-            for rel in testing.relations + candidates:
-                positive = rel.positive
-                name = rel.word
-                similarities = [rel.euclidean_similarity(x) for x in training.relations]
-                weighted_similarities = [
-                    weights[i] * similarities[i]
-                    for i in xrange(len(weights))
-                ]
-                average_similarity = sum(weighted_similarities)
-                results.append([positive, name, average_similarity, 0])
-            process_results(results)
+    @staticmethod
+    def normalize_list(l):
+        return [x/sum(l) for x in l]
 
-    def sim_measure_max(self):
-        for testing, training in self.testing_slices():
-            candidates = training.spatial_candidates()
-            results = list()
-            for rel in testing.relations + candidates:
-                positive = rel.positive
-                name = rel.word
+    def sim_measure(self, training, testing, method='average', weight_type='softmax', distance='cosine'):
+        candidates = training.spatial_candidates()
+        results = list()
+
+        if weight_type == 'none':
+            weights = [1/len(training) for _ in xrange(len(training))]
+        elif weight_type == 'normalized':
+            weights = self.normalize_list([training.rel_weight(rel, distance) for rel in training.relations])
+        elif weight_type == 'softmax':
+            weights = self.softmax_list([training.rel_weight(rel, distance) for rel in training.relations])
+        else:
+            raise KeyError('Wrong weight_type parameter')
+
+        for rel in testing.relations + candidates:
+            positive = rel.positive
+            name = rel.word
+
+            if distance == 'cosine':
                 similarities = [rel.cosine_similarity(x) for x in training.relations]
-                average_similarity = max(similarities)
-                results.append([positive, name, average_similarity, 0])
-            process_results(results)
-            print datetime.datetime.now()
+            elif distance == 'euclidean':
+                similarities = [rel.euclidean_similarity(x) for x in training.relations]
+            else:
+                raise KeyError('Wrong distance parameter')
+
+            if method == 'max':
+                final_similarity = max(similarities)
+            elif method == 'average':
+                final_similarity = sum([
+                        weights[i] * similarities[i]
+                        for i in xrange(len(similarities))
+                    ])
+            else:
+                raise KeyError('Wrong method parameter')
+
+            results.append([positive, name, final_similarity, 0])
+        return process_results(results)
+
 
     @classmethod
     def create_from_file(cls, filename, capitalize=False):
@@ -283,28 +299,26 @@ class RelationSet:
             relations = map(create_relation, pairs)
             return RelationSet(relations, filename=filename)
 
-    @staticmethod
-    def slice_list(l, n):
-        n = max(1, n)
-        return [l[i:i + n] for i in range(0, len(l), n)]
-
-    @staticmethod
-    def part_slices(slices, i):
-        testing_set = slices[i]
-        training_slices = slices[:i] + slices[i+1:]
-        training_set = flatten(training_slices)
-        return testing_set, training_set
-
-
-our_set = RelationSet.create_from_file('/home/piko/RubymineProjects/dp/relations/mikolov/11a-capital-common-countries.txt', capitalize=True)
+our_set = RelationSet.create_from_file('./capitals.txt', capitalize=True)
 print datetime.datetime.now()
-#our_set.sim_measure_average()
-our_set.sim_measure_average_euclidean_softmax()
 
-# COSINE lepsie maxima
-# EUCLIDIAN lepsi priemer
-# Softmax zatial bez zlepsenia
+# testing, training = our_set.testing_slices()[0]
+# print evaluate_results(our_set.sim_measure(training, testing, weight_type='normalized'))
+# print evaluate_results(our_set.sim_measure(training, testing))
+
+candidates = our_set.spatial_candidates()
+for rel in our_set.relations:
+    if rel.word() in [cand.word() for cand in candidates]:
+        print 1
+    else:
+        print 0
+
+
 # kolko sa toho nachadza v okoli
+# pozri sa na vysledky pre najlepsiu metodu
+# ked je vacsi dataset, je to presnejsie alebo menej presne?
+# ako je na tom SVM a da sa to vylepsit? skusit rozlicne nastavenia...
+# ako sme na tom s jednoduchym analogy searchom
 
 #2. Ukazkovy vektor
 #Vytvor ukazkovy vektor z triedy ako:
