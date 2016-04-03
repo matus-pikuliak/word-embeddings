@@ -1,32 +1,37 @@
 from gensim.models import Word2Vec
 from scipy.spatial import distance
-import os, time, random, re, glob
+import numpy as np
+import os, time, random, re, glob, datetime
 
 data_folder = '/media/piko/DATA/dp-data/python-files/'
-
 
 def file_path(filename):
     return '%s%s' % (data_folder, filename)
 
-# def evaluate_svm_files(timestamp, average=True, topn=None):
-#     test_file = glob.glob("%s%s-test*" % (data_folder, timestamp))[0]
-#     predict_file = glob.glob("%s%s-prediction*" % (data_folder, timestamp))[0]
-#     records = list()
-#     with open(test_file) as f:
-#         for line in f:
-#             positive = (line.split()[0] == '1')
-#             name = line.split('#')[1].strip()
-#             records.append([positive, name, 0, 0])
-#     with open(predict_file) as f:
-#         i = 0
-#         for line in f:
-#             records[i][2] = float(line)
-#             i += 1
-#     records = sorted(records, key=lambda x: -x[2])
-#     for i in xrange(len(records)):
-#         records[i][3] = i+1
-#     print [x[3] for x in records if x[0]]
-#
+def process_results(results):
+    results = sorted(results, key=lambda x: -x[2])
+    for i in xrange(len(results)):
+        results[i][3] = i+1
+    print [x[3] for x in results if x[0]]
+
+
+def evaluate_svm_files(timestamp, average=True, topn=None):
+    test_file = glob.glob("%s%s-test*" % (data_folder, timestamp))[0]
+    predict_file = glob.glob("%s%s-prediction*" % (data_folder, timestamp))[0]
+    records = list()
+    with open(test_file) as f:
+        for line in f:
+            positive = (line.split()[0] == '1')
+            name = line.split('#')[1].strip()
+            records.append([positive, name, 0, 0])
+    with open(predict_file) as f:
+        i = 0
+        for line in f:
+            records[i][2] = float(line)
+            i += 1
+    process_results(records)
+
+# SPRACUJE DATA SO SVM-ciek
 # for f in glob.glob('%s*' % data_folder):
 #     match = re.match('.*files/([0-9]*)-train.*', f)
 #     if match is not None:
@@ -53,6 +58,10 @@ def emb(word=None, vector=None):
 
 
 class Embedding:
+
+    cosines = dict()
+    euclideans = dict()
+
     def __init__(self, word=None, vector=None):
         if vector is None and word is None:
             raise KeyError('You have to state word or vector')
@@ -60,9 +69,31 @@ class Embedding:
         self.word = word
 
     def cosine_similarity(self, embedding):
+        if self in self.cosines and embedding in self.cosines[self]:
+            return self.cosines[self][embedding]
+        if embedding in self.cosines and self in self.cosines[embedding]:
+            return self.cosines[embedding][self]
+        if self not in self.cosines:
+            self.cosines[self] = dict()
+        cosine_value = self.cosine_computation(embedding)
+        self.cosines[self][embedding] = cosine_value
+        return cosine_value
+
+    def cosine_computation(self, embedding):
         return -distance.cosine(self.v, embedding.v) / 2 + 1
 
     def euclidean_similarity(self, embedding):
+        if self in self.euclideans and embedding in self.euclideans[self]:
+            return self.euclideans[self][embedding]
+        if embedding in self.euclideans and self in self.euclideans[embedding]:
+            return self.euclideans[embedding][self]
+        if self not in self.euclideans:
+            self.euclideans[self] = dict()
+        euclidean_value = self.euclidean_computation(embedding)
+        self.euclideans[self][embedding] = euclidean_value
+        return euclidean_value
+
+    def euclidean_computation(self, embedding):
         return 1 / (1 + distance.euclidean(self.v, embedding.v))
 
     def __len__(self):
@@ -99,6 +130,9 @@ class Relation:
 
     def __len__(self):
         return len(self.rel_embedding)
+
+    def word(self):
+        self.rel_embedding.word
 
     def cosine_similarity(self, relation):
         return self.rel_embedding.cosine_similarity(relation.rel_embedding)
@@ -172,6 +206,68 @@ class RelationSet:
             os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
             os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
 
+    def sim_measure_average(self):
+        for testing, training in self.testing_slices():
+            candidates = training.spatial_candidates()
+            results = list()
+            for rel in testing.relations + candidates:
+                positive = rel.positive
+                name = rel.word
+                similarities = [rel.cosine_similarity(x) for x in training.relations]
+                average_similarity = sum(similarities) / len(similarities)
+                results.append([positive, name, average_similarity, 0])
+            process_results(results)
+
+    def sim_measure_average_euclidean(self):
+        for testing, training in self.testing_slices():
+            candidates = training.spatial_candidates()
+            results = list()
+            for rel in testing.relations + candidates:
+                positive = rel.positive
+                name = rel.word
+                similarities = [rel.euclidean_similarity(x) for x in training.relations]
+                average_similarity = sum(similarities) / len(similarities)
+                results.append([positive, name, average_similarity, 0])
+            process_results(results)
+
+    def rel_weight(self, relation):
+        similarities = [relation.euclidean_similarity(rel) for rel in self.relations]
+        return (sum(similarities) - 1) / (len(similarities) - 1)
+
+    @staticmethod
+    def softmax(x):
+        return np.exp(x) / np.sum(np.exp(x), axis=0)
+
+    def sim_measure_average_euclidean_softmax(self):
+        for testing, training in self.testing_slices():
+            candidates = training.spatial_candidates()
+            results = list()
+            weights = self.softmax([training.rel_weight(rel) for rel in training.relations])
+            for rel in testing.relations + candidates:
+                positive = rel.positive
+                name = rel.word
+                similarities = [rel.euclidean_similarity(x) for x in training.relations]
+                weighted_similarities = [
+                    weights[i] * similarities[i]
+                    for i in xrange(len(weights))
+                ]
+                average_similarity = sum(weighted_similarities)
+                results.append([positive, name, average_similarity, 0])
+            process_results(results)
+
+    def sim_measure_max(self):
+        for testing, training in self.testing_slices():
+            candidates = training.spatial_candidates()
+            results = list()
+            for rel in testing.relations + candidates:
+                positive = rel.positive
+                name = rel.word
+                similarities = [rel.cosine_similarity(x) for x in training.relations]
+                average_similarity = max(similarities)
+                results.append([positive, name, average_similarity, 0])
+            process_results(results)
+            print datetime.datetime.now()
+
     @classmethod
     def create_from_file(cls, filename, capitalize=False):
         def create_relation(pair):
@@ -201,9 +297,14 @@ class RelationSet:
 
 
 our_set = RelationSet.create_from_file('/home/piko/RubymineProjects/dp/relations/mikolov/11a-capital-common-countries.txt', capitalize=True)
-our_set.similarity_svm_generate_files()
+print datetime.datetime.now()
+#our_set.sim_measure_average()
+our_set.sim_measure_average_euclidean_softmax()
 
-
+# COSINE lepsie maxima
+# EUCLIDIAN lepsi priemer
+# Softmax zatial bez zlepsenia
+# kolko sa toho nachadza v okoli
 
 #2. Ukazkovy vektor
 #Vytvor ukazkovy vektor z triedy ako:
