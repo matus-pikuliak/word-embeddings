@@ -1,0 +1,456 @@
+            results_1.append(self.sim_measure(training, testing, distance='euclidean'))
+            results_2.append(self.sim_measure(training, testing, distance='euclidean', weight_type='none'))
+            results_3.append(self.sim_measure(training, testing, distance='euclidean', weight_type='normalized'))
+            results_4.append(self.sim_measure(training, testing))
+            results_5.append(self.sim_measure(training, testing, weight_type='none'))
+            results_6.append(self.sim_measure(training, testing, method='max'))
+
+            ./relations/cities.txt
+2016-04-05 18:16:09.124286
+(0.00014169980269217283, 0.00023341027899796579, 9.7300715971101681e-05)
+(0.00014134049822281592, 0.00023178918387352598, 9.7300715971101681e-05)
+(0.00014001666292085628, 0.00023177146458222677, 9.7300715971101681e-05)
+(0.002579313895874613, 0.0091218972910433217, 0.00010540910896869349)
+(0.0026263585293218907, 0.0095361770711868566, 0.00010540910896869349)
+(0.005672042003587824, 0.0095099971155690952, 0.0043389398914427391)
+
+./relations/family.txt
+2016-04-05 18:35:19.217722
+(0.01491827462336014, 0.045899495847196832, 8.9045032501436857e-05)
+(0.01493985723054932, 0.045948663069907462, 8.9045032501436857e-05)
+(0.014867626034348026, 0.045786590441683324, 8.9045032501436857e-05)
+(0.049798428732880352, 0.11634741058987809, 8.9045032501436857e-05)
+(0.049711174127267312, 0.11636419689130911, 8.9045032501436857e-05)
+(0.052802086127164846, 0.090912005903355325, 0.00045608027012754244)
+
+./relations/capitals.txt
+2016-04-05 18:54:31.346814
+(0.00068586022565710503, 0.0025234468556267829, 6.0658631419957906e-05)
+(0.00068513712369835987, 0.0025163886665200354, 6.0658631419957906e-05)
+(0.00068851735824959333, 0.0025410705362136762, 6.0658631419957906e-05)
+(0.0016190832268753411, 0.0058934728417010954, 0.00010032221133759015)
+(0.001612549313800563, 0.0058307331341813876, 0.00010032221133759015)
+(0.0025114262384693087, 0.0038369434210993947, 0.00096254812740637031)
+
+./relations/currency.txt
+2016-04-05 19:19:54.173642
+(0.023631475766822313, 0.039356562382835414, 0.00090657439446366784)
+(0.023720755958903484, 0.039493358173445521, 0.00090657439446366784)
+(0.023302034442804192, 0.038900421608786394, 0.0008581314878892734)
+(0.030320024221688807, 0.054952410092848715, 0.0020107095237755705)
+(0.029143012688300007, 0.053190501114692861, 0.002067750928705374)
+(0.098952218721393065, 0.12993598685165456, 0.043665195473764518)
+
+
+capitals 0.92
+cities 1.0
+currency 0.92
+family 0.88
+
+./relations/cities.txt
+w   Seattle-Oregon
+r   Cleveland-Ohio
+r   Tampa-Florida
+r   Orlando-Florida
+r   Portland-Maine
+w   Atlanta-Alabama
+w   Denver-Wyoming
+w   Memphis-Arkansas
+w   Memphis-Kentucky
+r   Pittsburgh-Pennsylvania
+w   Chicago-Michigan
+w   Milwaukee-Michigan
+r   Cincinnati-Ohio
+r   Peoria-Illinois
+w   Milwaukee-Illinois
+w   Memphis-Alabama
+w   Denver-Montana
+r   Reno-Nevada
+w   Minneapolis-Wisconsin
+r   Honolulu-Hawaii
+w   Nashville-Kentucky
+w   Cleveland-Pennsylvania
+w   Indianapolis-Kentucky
+r   LA-California !!!
+w   Indianapolis-Illinois
+r   Toronto-Ontario !!!
+w   Atlanta-Kentucky
+w   Cleveland-Michigan
+w   Chicago-Wisconsin
+w   Atlanta-Tennessee
+w   Milwaukee-Iowa
+w   Denver-Pennsylvania
+w   Milwaukee-Pennsylvania
+w   Denver-Nevada
+w   Cincinnati-Kentucky
+w   Portland-Vermont
+w   Phoenix-Nevada
+w   Seattle-California
+w   Milwaukee-Indiana
+w   Seattle-Montana
+r   Winnipeg-Manitoba !!!
+w   Chicago-Pennsylvania
+w   Baltimore-Pennsylvania
+w   Atlanta-Arkansas
+w   Seattle-Nebraska
+w   Denver-Nebraska
+r   Columbus-Ohio
+w   Dallas-Pennsylvania
+r   Edmonton-Alberta
+r   Lansing-Michigan
+w   Atlanta-Pennsylvania
+w   Dallas-Arkansas
+w   Boston-Vermont
+w   Indianapolis-Ohio
+w   Seattle-Idaho
+r   Minneapolis-Minnesota
+w   Chicago-Missouri
+w   Atlanta-Virginia
+w   Memphis-Missouri
+r   Wichita-Kansas
+w   Milwaukee-Missouri
+w   Indianapolis-Michigan
+w   Milwaukee-Vermont
+w   Minneapolis-Michigan
+r   Waltham-Massachusetts
+w   Atlanta-Florida
+w   Atlanta-Illinois
+w   Denver-Kentucky
+w   Denver-Kansas
+w   Boston-Maine
+w   Toronto-Michigan
+w   Orlando-Pennsylvania
+w   Minneapolis-Illinois
+w   Denver-Utah
+w   Phoenix-California
+r   Hartford-Connecticut
+w   Chicago-California
+w   Cleveland-Kentucky
+w   Denver-Michigan
+w   Atlanta-Mississippi
+w   Dallas-Nebraska
+w   Denver-Missouri
+w   Seattle-Michigan
+w   Orlando-Michigan
+w   Indianapolis-Pennsylvania
+w   Dallas-Missouri
+w   Seattle-Maine
+w   Nashville-Alabama
+w   wNewark-Pennsylvania
+w   Milwaukee-Ohio
+w   Atlanta-Michigan
+w   Denver-Vermont
+w   Milwaukee-Nebraska
+w   Memphis-Mississippi
+w   Atlanta-Missouri
+w   Denver-Idaho
+w   Dallas-Alabama
+w   Minneagpolis-Iowa
+w   Cincinnati-Pennsylvania
+r   Billings-Montana
+
+./relations/family.txt
+himself-herself
+Uncle-Aunt
+father-daughter
+brother-daughter
+uncle-niece
+nephew-daughter
+son-mother
+uncle-mother
+brother-mother
+brother-niece
+Uncle-Auntie
+uncle-grandmother
+boys-girls
+nephew-granddaughter
+uncle-daughter
+son-niece
+nephew-mother
+uncle-sister
+brother-aunt
+brothers-sister
+father-niece
+grandfather-granddaughter
+grandson-niece
+Uncle-Aunty
+Brother-Sister
+nephew-aunt
+baritone-soprano
+Uncle-Grandma
+uncle-granddaughter
+nephew-sister
+father-grandmother
+grandson-daughter
+He-She
+brothers-mother
+father-sister
+brother-sisters
+uncle-Aunt
+Grandpa-Grandma
+father-aunt
+son-granddaughter
+nephew-grandmother
+schoolboy-schoolgirl
+boyhood-girlhood
+his-herself
+brothers-daughters
+brother-grandmother
+brothers-daughter
+grandfather-niece
+grandfather-aunt
+Grandpa-Aunt
+him-her
+brother-granddaughter
+Uncle-Grandmother
+he-her
+Grandfather-Grandmother
+grandfather-mother
+sons-daughter
+nephew-stepdaughter
+brother-stepdaughter
+Uncle-Mama
+brothers-niece
+Uncle-grandma
+brother-Aunt
+father-granddaughter
+him-herself
+Uncle-minx
+Uncle-auntie
+brother-girl
+him-she
+Father-Sister
+he-herself
+son-sister
+grandfather-Aunt
+Uncle-Granny
+grandson-grandmother
+grandfather-daughter
+uncles-Aunt
+Brother-Aunt
+brothers-Aunt
+brothers-aunt
+uncles-sisters
+brother-daughters
+uncle-girl
+uncles-aunts
+Uncle-mother
+Uncle-housewife
+Father-Mother
+Uncle-grandmother
+Jr-Marie
+Uncle-daughter
+brothers-girl
+Uncle-aunt
+uncle-stepdaughter
+brothers-grandmother
+son-stepdaughter
+grandpa-Aunt
+his-hers
+Uncle-Mum
+nephew-girl
+dad-mother
+
+./relations/capitals.txt
+Kiev-Ukraine
+Manila-Philippines
+Warsaw-Poland
+Sydney-Australia
+Seoul-Korea
+Stockholm-Norway
+Dublin-Ireland
+Bogota-Colombia
+Tunis-Tunisia
+Stockholm-Finland
+Caracas-Argentina
+Damascus-Syria
+Caracas-Ecuador
+Moscow-Ukraine
+Prague-Poland
+Budapest-Romania
+Helsinki-Sweden
+Budapest-Poland
+Melbourne-Australia
+Belgrade-Serbia
+Khartoum-Sudan
+Quito-Ecuador
+Belgrade-Croatia
+Delhi-India
+London-Britain
+Dusseldorf-Germany
+Cairo-Tunisia
+Caracas-Bolivia
+Stockholm-Denmark
+Budapest-Slovakia
+Bogota-Ecuador
+Caracas-Colombia
+Sofia-Bulgaria
+Milan-Italy
+Caracas-Chile
+Cairo-Algeria
+Frankfurt-Germany
+Budapest-Austria
+Caracas-Brazil
+Budapest-Germany
+Bangkok-Malaysia
+Vienna-Austria
+Riga-Latvia
+Kiev-Moldova
+London-UK
+Kiev-Latvia
+Cairo-Morocco
+Prague-Slovakia
+Moscow-Poland
+Caracas-Honduras
+Bogota-Argentina
+Kiev-Russia
+Budapest-Croatia
+Paris-Italy
+Helsinki-Norway
+Havana-Argentina
+Munich-Germany
+Kiev-Belarus
+Moscow-Belarus
+Budapest-Slovenia
+Caracas-Paraguay
+Seoul-Japan
+Kiev-Slovakia
+Amsterdam-Netherlands
+Havana-Venezuela
+Warsaw-Hungary
+Belgrade-Slovenia
+Paris-Germany
+Madrid-Portugal
+Kiev-Hungary
+Caracas-Uruguay
+Moscow-Latvia
+Kiev-Romania
+Algiers-Algeria
+Prague-Hungary
+Brisbane-Australia
+Bogota-Chile
+Caracas-Nicaragua
+Vienna-Germany
+Kiev-Lithuania
+Brussels-EU
+Bangkok-Indonesia
+Bogota-Paraguay
+Kiev-Poland
+Helsinki-Slovakia
+Budapest-Bulgaria
+Kiev-Slovenia
+Paris-Belgium
+Shanghai-China
+Moscow-Slovakia
+Moscow-Kazakhstan
+Kiev-Bulgaria
+Montreal-Canada
+Stockholm-Swedes
+Tunis-Algeria
+Budapest-Latvia
+Cairo-Italy
+Warsaw-Germany
+Bogota-Venezuela
+Tunis-Egypt
+
+./relations/currency.txt
+Poland-forint
+Russia-hryvnia
+Argentina-peso
+Turkey-lira
+Philippines-peso
+Belarus-hryvnia
+Germany-forint
+Lithuania-hryvnia
+Romania-hryvnia
+Kazakhstan-hryvnia
+Ukraine-ruble
+Moldova-hryvnia
+Colombia-peso
+Romania-forint
+Chile-peso
+Austria-forint
+Peru-peso
+Indonesia-ringgit
+Poland-hryvnia
+Lithuania-forint
+Uzbekistan-hryvnia
+Latvia-hryvnia
+France-franc
+Bulgaria-hryvnia
+Azerbaijan-hryvnia
+Hungary-zloty
+Romania-zloty
+Brazil-peso
+Ukraine-forint
+Croatia-hryvnia
+Venezuela-peso
+Slovakia-forint
+Pakistan-rupee
+Germany-zloty
+Guatemala-peso
+Russia-forint
+Belarus-ruble
+Ecuador-peso
+Kazakhstan-ruble
+Armenia-hryvnia
+Hungary-hryvnia
+Estonia-hryvnia
+Israel-shekel
+Albania-hryvnia
+Switzerland-franc
+Croatia-forint
+India-rupees
+Brazil-rupee
+Europe-forint
+Argentina-hryvnia
+Lithuania-zloty
+Germany-euro
+Italy-lira
+Poland-leu
+Slovakia-hryvnia
+Belgium-forint
+Bulgaria-forint
+Bangladesh-rupee
+Russia-zloty
+Ghana-naira
+Germany-franc
+Latvia-forint
+Spain-peso
+Lithuania-ruble
+Denmark-krona
+Italy-forint
+Norway-krone
+Honduras-peso
+Germany-hryvnia
+Morocco-lira
+Norway-krona
+Brazil-forint
+Lithuania-leu
+Rumania-hryvnia
+Serbia-hryvnia
+Spain-forint
+Hungary-leu
+Nicaragua-peso
+Uruguay-peso
+Thailand-ringgit
+Croatia-zloty
+Argentina-rupee
+Uzbekistan-ruble
+Bolivia-peso
+Europe-zloty
+Malaysia-rupee
+Brazil-hryvnia
+Africa-rand
+Albania-forint
+Russia-rubles
+Turkey-forint
+Bulgaria-zloty
+Austria-hryvnia
+Croatia-leu
+Australia-rupee
+USA-hryvnia
+Argentina-forint
+Brazil-zloty
+Slovakia-zloty
+Sweden-forint

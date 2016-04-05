@@ -1,5 +1,6 @@
 from gensim.models import Word2Vec
 from scipy.spatial import distance
+from multiprocessing import Pool
 import numpy as np
 import os, time, random, re, glob, datetime
 
@@ -82,8 +83,6 @@ class Embedding:
     def cosine_similarity(self, embedding):
         if self in self.cosines and embedding in self.cosines[self]:
             return self.cosines[self][embedding]
-        if embedding in self.cosines and self in self.cosines[embedding]:
-            return self.cosines[embedding][self]
         if self not in self.cosines:
             self.cosines[self] = dict()
         cosine_value = self.cosine_computation(embedding)
@@ -96,8 +95,6 @@ class Embedding:
     def euclidean_similarity(self, embedding):
         if self in self.euclideans and embedding in self.euclideans[self]:
             return self.euclideans[self][embedding]
-        if embedding in self.euclideans and self in self.euclideans[embedding]:
-            return self.euclideans[embedding][self]
         if self not in self.euclideans:
             self.euclideans[self] = dict()
         euclidean_value = self.euclidean_computation(embedding)
@@ -114,14 +111,14 @@ class Embedding:
         if len(self) != len(embedding):
             raise KeyError('The embeddings have different lengths')
         vector = [self.v[i] - embedding.v[i] for i in xrange(len(self))]
-        name = "%s-%s" % (self.word, embedding.word)
+        name = "%s-%s" % (embedding.word, self.word)
         return emb(vector=vector, word=name)
 
     def __add__(self, embedding):
         if len(self) != len(embedding):
             raise KeyError('The embeddings have different lengths')
         vector = [self.v[i] + embedding.v[i] for i in xrange(len(self))]
-        name = "%s+%s" % (self.word, embedding.word)
+        name = "%s+%s" % (embedding.word, self.word)
         return emb(vector=vector, word=name)
 
     def neighbours(self, n=100):
@@ -169,6 +166,33 @@ class Relation:
             return -1
         raise KeyError('Relation should be marked candidate or positive.')
 
+def evaluate_candidates(args):
+    candidates, training, weights, distance, method = args
+    results = list()
+    for rel in candidates:
+        positive = rel.positive
+        name = rel.word()
+
+        if distance == 'cosine':
+            similarities = [rel.cosine_similarity(x) for x in training.relations]
+        elif distance == 'euclidean':
+            similarities = [rel.euclidean_similarity(x) for x in training.relations]
+        else:
+            raise KeyError('Wrong distance parameter')
+
+        if method == 'max':
+            final_similarity = max(similarities)
+        elif method == 'average':
+            final_similarity = sum([
+                    weights[i] * similarities[i]
+                    for i in xrange(len(similarities))
+                ])
+        else:
+            raise KeyError('Wrong method parameter')
+
+        results.append([positive, name, final_similarity, 0])
+    return results
+
 
 class RelationSet:
     def __init__(self, relations, filename=None):
@@ -189,7 +213,7 @@ class RelationSet:
     @staticmethod
     def slice_list(l, n):
         n = max(1, n)
-        return [l[i:i + n] for i in range(0, len(l), n)]
+        return [l[i::n] for i in xrange(n)]
 
     @staticmethod
     def part_slices(slices, i):
@@ -198,8 +222,15 @@ class RelationSet:
         training_set = flatten(training_slices)
         return testing_set, training_set
 
-    def spatial_candidates(self):
-        return flatten([rel.spatial_candidates() for rel in self.relations])
+    def spatial_candidates(self, filter_positives=True):
+        preliminary_candidates = flatten([rel.spatial_candidates() for rel in self.relations])
+        keys = set([rel.word() for rel in self.relations]) if filter_positives else set()
+        candidates = list()
+        for candidate in preliminary_candidates:
+            if candidate.word() not in keys:
+                keys.add(candidate.word())
+                candidates.append(candidate)
+        return candidates
 
     def naive_svm_generate_files(self):
         for testing, training in self.testing_slices():
@@ -248,10 +279,9 @@ class RelationSet:
 
     def sim_measure(self, training, testing, method='average', weight_type='softmax', distance='cosine'):
         candidates = training.spatial_candidates()
-        results = list()
 
         if weight_type == 'none':
-            weights = [1/len(training) for _ in xrange(len(training))]
+            weights = [float(1)/len(training) for _ in xrange(len(training))]
         elif weight_type == 'normalized':
             weights = self.normalize_list([training.rel_weight(rel, distance) for rel in training.relations])
         elif weight_type == 'softmax':
@@ -259,29 +289,33 @@ class RelationSet:
         else:
             raise KeyError('Wrong weight_type parameter')
 
-        for rel in testing.relations + candidates:
-            positive = rel.positive
-            name = rel.word
-
-            if distance == 'cosine':
-                similarities = [rel.cosine_similarity(x) for x in training.relations]
-            elif distance == 'euclidean':
-                similarities = [rel.euclidean_similarity(x) for x in training.relations]
-            else:
-                raise KeyError('Wrong distance parameter')
-
-            if method == 'max':
-                final_similarity = max(similarities)
-            elif method == 'average':
-                final_similarity = sum([
-                        weights[i] * similarities[i]
-                        for i in xrange(len(similarities))
-                    ])
-            else:
-                raise KeyError('Wrong method parameter')
-
-            results.append([positive, name, final_similarity, 0])
+        evaluated = testing.relations + candidates
+        print len(evaluated)
+        evaluated_slices = self.slice_list(evaluated, 8)
+        print len(evaluated_slices[0])
+        pool = Pool(processes=8)
+        args = [(evaluated_slices[i], training, weights, distance, method) for i in xrange(8)]
+        results = flatten(pool.map(evaluate_candidates, args))
+        print len(results)
         return process_results(results)
+
+    def find_new(self, n=100):
+        candidates = self.spatial_candidates()
+        results = list()
+        weights = self.softmax_list([self.rel_weight(rel, 'euclidean') for rel in self.relations])
+        for rel in candidates:
+            positive = 0
+            name = rel.word()
+            similarities = [rel.cosine_similarity(x) for x in self.relations]
+            final_similarity = sum([
+                weights[i] * similarities[i]
+                for i in xrange(len(similarities))
+            ])
+            results.append([positive, name, final_similarity, 0])
+        results = sorted(results, key=lambda x: -x[2])
+        for result in results[0:n]:
+            print result[1]
+        self.clear_cache()
 
 
     @classmethod
@@ -299,26 +333,54 @@ class RelationSet:
             relations = map(create_relation, pairs)
             return RelationSet(relations, filename=filename)
 
-our_set = RelationSet.create_from_file('./capitals.txt', capitalize=True)
-print datetime.datetime.now()
+    def check_candidate_presence(self):
+        candidates_words = [candidate.word() for candidate in self.spatial_candidates(filter_positives=False)]
+        present = 0
+        for rel in self.relations:
+            present += 1 if rel.word() in candidates_words else 0
+        return float(present) / len(self)
 
-# testing, training = our_set.testing_slices()[0]
-# print evaluate_results(our_set.sim_measure(training, testing, weight_type='normalized'))
-# print evaluate_results(our_set.sim_measure(training, testing))
+    @staticmethod
+    def clear_cache():
+        Embedding.cosines.clear()
+        embeddings.clear()
 
-candidates = our_set.spatial_candidates()
-for rel in our_set.relations:
-    if rel.word() in [cand.word() for cand in candidates]:
-        print 1
-    else:
-        print 0
+    def run_sim_test(self):
+        print datetime.datetime.now()
+        results_1 = []
+        results_2 = []
+        results_3 = []
+        results_4 = []
+        results_5 = []
+        results_6 = []
+        for _ in xrange(1):
+            testing, training = self.testing_slices()[0]
+            results_1.append(self.sim_measure(training, testing, distance='euclidean'))
+            # results_2.append(self.sim_measure(training, testing, distance='euclidean', weight_type='none'))
+            # results_3.append(self.sim_measure(training, testing, distance='euclidean', weight_type='normalized'))
+            # results_4.append(self.sim_measure(training, testing))
+            # results_5.append(self.sim_measure(training, testing, weight_type='none'))
+            # results_6.append(self.sim_measure(training, testing, method='max'))
+        print evaluate_results(flatten(results_1))
+        # print evaluate_results(flatten(results_2))
+        # print evaluate_results(flatten(results_3))
+        # print evaluate_results(flatten(results_4))
+        # print evaluate_results(flatten(results_5))
+        # print evaluate_results(flatten(results_6))
+        self.clear_cache()
+
+for f in glob.glob('./relations/*.txt'):
+    print f
+    our_set = RelationSet.create_from_file(f)
+    our_set.find_new()
+    print
 
 
-# kolko sa toho nachadza v okoli
-# pozri sa na vysledky pre najlepsiu metodu
-# ked je vacsi dataset, je to presnejsie alebo menej presne?
+#our_set = RelationSet.create_from_file('./currency.txt')
+#print our_set.check_candidate_presence()
+
+# ked je vacsi dataset, je to presnejsie alebo menej presne (napr. s jednym vztahom)?
 # ako je na tom SVM a da sa to vylepsit? skusit rozlicne nastavenia...
-# ako sme na tom s jednoduchym analogy searchom
 
 #2. Ukazkovy vektor
 #Vytvor ukazkovy vektor z triedy ako:
