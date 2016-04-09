@@ -6,8 +6,13 @@ import os, time, random, re, glob, datetime
 
 data_folder = '/media/piko/DATA/dp-data/python-files/'
 
+
 def file_path(filename):
     return '%s%s' % (data_folder, filename)
+
+
+def flatten(l):
+    return [item for sublist in l for item in sublist]
 
 
 def process_results(results):
@@ -24,9 +29,16 @@ def evaluate_results(results):
     return mean, std, median
 
 
-def evaluate_svm_files(timestamp, average=True, topn=None):
-    test_file = glob.glob("%s%s-test*" % (data_folder, timestamp))[0]
-    predict_file = glob.glob("%s%s-prediction*" % (data_folder, timestamp))[0]
+def print_values(results):
+    results = sorted(results, key=lambda x: -x[2])
+    with open('sims-family.txt','w+') as f:
+        f.write('\n'.join([str(x[2]) for x in results]))
+
+
+def svm_file(timestamp, average=True, topn=None):
+    print 1
+    test_file = glob.glob("%s*%s-test*" % (data_folder, timestamp))[0]
+    predict_file = glob.glob("%s*%s-prediction*" % (data_folder, timestamp))[0]
     records = list()
     with open(test_file) as f:
         for line in f:
@@ -38,6 +50,12 @@ def evaluate_svm_files(timestamp, average=True, topn=None):
         for line in f:
             records[i][2] = float(line)
             i += 1
+    #
+    results = sorted(records, key=lambda x: -x[2])
+    for i in xrange(100):
+        print results[i]
+    #
+    exit()
     return process_results(records)
 
 # SPRACUJE DATA SO SVM-ciek
@@ -48,6 +66,17 @@ def evaluate_svm_files(timestamp, average=True, topn=None):
 #         print evaluate_results(res)
 
 
+def get_timestamp(string):
+        return re.match('%s[a-z]*-([0-9]*).*' % data_folder, string).group(1)
+
+
+def evaluate_svm_files(name):
+    print evaluate_results(flatten([svm_file(get_timestamp(f)) for f in glob.glob('%s%s*train*' % (data_folder, name))]))
+
+
+# for f in glob.glob('./relations/*.txt'):
+#     name = re.match('.*/([a-z]*).txt',f).group(1)
+#     evaluate_svm_files(name)
 
 def svm_transform(l):
     return ' '.join(["%d:%f" % (i+1, l[i]) for i in xrange(len(l))])
@@ -58,9 +87,6 @@ with open('./wiki-100k.txt') as f:
         if not line.startswith('#'):
             top100k.add(line.strip())
 model = Word2Vec.load_word2vec_format('/media/piko/DATA/dp-data/GoogleNews-vectors-negative300.bin', binary=True, selected_words=top100k)
-
-def flatten(l):
-    return [item for sublist in l for item in sublist]
 
 embeddings = dict()
 def emb(word=None, vector=None):
@@ -121,11 +147,11 @@ class Embedding:
         name = "%s+%s" % (embedding.word, self.word)
         return emb(vector=vector, word=name)
 
-    def neighbours(self, n=100):
+    def neighbours(self, n=200):
         return [emb(record[0]) for record in model.most_similar(self.word, topn=n)]
 
     def svm_sim_transform(self, relations):
-        return svm_transform([self.cosine_similarity(rel.rel_embedding) for rel in relations])
+        return svm_transform([self.euclidean_similarity(rel.rel_embedding) for rel in relations])
 
 
 class Relation:
@@ -166,33 +192,6 @@ class Relation:
             return -1
         raise KeyError('Relation should be marked candidate or positive.')
 
-def evaluate_candidates(args):
-    candidates, training, weights, distance, method = args
-    results = list()
-    for rel in candidates:
-        positive = rel.positive
-        name = rel.word()
-
-        if distance == 'cosine':
-            similarities = [rel.cosine_similarity(x) for x in training.relations]
-        elif distance == 'euclidean':
-            similarities = [rel.euclidean_similarity(x) for x in training.relations]
-        else:
-            raise KeyError('Wrong distance parameter')
-
-        if method == 'max':
-            final_similarity = max(similarities)
-        elif method == 'average':
-            final_similarity = sum([
-                    weights[i] * similarities[i]
-                    for i in xrange(len(similarities))
-                ])
-        else:
-            raise KeyError('Wrong method parameter')
-
-        results.append([positive, name, final_similarity, 0])
-    return results
-
 
 class RelationSet:
     def __init__(self, relations, filename=None):
@@ -232,29 +231,17 @@ class RelationSet:
                 candidates.append(candidate)
         return candidates
 
-    def naive_svm_generate_files(self):
-        for testing, training in self.testing_slices():
-            candidates = training.spatial_candidates()
-            timestamp = int(time.time())
-            train_filename = file_path('%d-train-naive_svm' % timestamp)
-            model_filename = file_path('%d-model-naive_svm' % timestamp)
-            test_filename = file_path('%d-test-naive_svm' % timestamp)
-            prediction_filename = file_path('%d-prediction-naive_svm' % timestamp)
-            open(train_filename, "wb").write('\n'.join([rel.svm_standard_transform() for rel in training.relations + candidates]))
-            open(test_filename, "wb").write('\n'.join([rel.svm_standard_transform() for rel in testing.relations + candidates]))
-            os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
-            os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
-
     def similarity_svm_generate_files(self):
+        name = re.match('.*/([a-z]*).txt',self.filename).group(1)
         for testing, training in self.testing_slices():
             candidates = training.spatial_candidates()
             examples = self.relations[0::2]
             training = self.relations[1::2]
             timestamp = int(time.time())
-            train_filename = file_path('%d-train-sim_svm' % timestamp)
-            model_filename = file_path('%d-model-sim_svm' % timestamp)
-            test_filename = file_path('%d-test-sim_svm' % timestamp)
-            prediction_filename = file_path('%d-prediction-sim_svm' % timestamp)
+            train_filename = file_path('%s-%d-train-sim_svm' % (name,timestamp))
+            model_filename = file_path('%s-%d-model-sim_svm' % (name,timestamp))
+            test_filename = file_path('%s-%d-test-sim_svm' % (name,timestamp))
+            prediction_filename = file_path('%s-%d-prediction-sim_svm' % (name,timestamp))
             open(train_filename, "wb").write('\n'.join([rel.svm_sim_transform(examples) for rel in training + candidates]))
             open(test_filename, "wb").write('\n'.join([rel.svm_sim_transform(examples) for rel in testing.relations + candidates]))
             os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
@@ -289,14 +276,31 @@ class RelationSet:
         else:
             raise KeyError('Wrong weight_type parameter')
 
+        results = list()
         evaluated = testing.relations + candidates
-        print len(evaluated)
-        evaluated_slices = self.slice_list(evaluated, 8)
-        print len(evaluated_slices[0])
-        pool = Pool(processes=8)
-        args = [(evaluated_slices[i], training, weights, distance, method) for i in xrange(8)]
-        results = flatten(pool.map(evaluate_candidates, args))
-        print len(results)
+        for rel in evaluated:
+            positive = rel.positive
+            name = rel.word()
+
+            if distance == 'cosine':
+                similarities = [rel.cosine_similarity(x) for x in training.relations]
+            elif distance == 'euclidean':
+                similarities = [rel.euclidean_similarity(x) for x in training.relations]
+            else:
+                raise KeyError('Wrong distance parameter')
+
+            if method == 'max':
+                final_similarity = max(similarities)
+            elif method == 'average':
+                final_similarity = sum([
+                        weights[i] * similarities[i]
+                        for i in xrange(len(similarities))
+                    ])
+            else:
+                raise KeyError('Wrong method parameter')
+
+            results.append([positive, name, final_similarity, 0])
+        print_values(results)
         return process_results(results)
 
     def find_new(self, n=100):
@@ -343,7 +347,23 @@ class RelationSet:
     @staticmethod
     def clear_cache():
         Embedding.cosines.clear()
+        Embedding.euclideans.clear()
         embeddings.clear()
+
+    def find_new_svm(self):
+        name = re.match('.*/([a-z]*).txt',self.filename).group(1)
+        candidates = self.spatial_candidates()
+        examples = self.relations[0::2]
+        training = self.relations[1::2]
+        timestamp = int(time.time())
+        train_filename = file_path('%s-%d-train-sim_svm' % (name,timestamp))
+        model_filename = file_path('%s-%d-model-sim_svm' % (name,timestamp))
+        test_filename = file_path('%s-%d-test-sim_svm' % (name,timestamp))
+        prediction_filename = file_path('%s-%d-prediction-sim_svm' % (name,timestamp))
+        open(train_filename, "wb").write('\n'.join([rel.svm_sim_transform(examples) for rel in training + candidates]))
+        open(test_filename, "wb").write('\n'.join([rel.svm_sim_transform(examples) for rel in candidates]))
+        os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
+        os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
 
     def run_sim_test(self):
         print datetime.datetime.now()
@@ -353,7 +373,7 @@ class RelationSet:
         results_4 = []
         results_5 = []
         results_6 = []
-        for _ in xrange(1):
+        for _ in xrange(5):
             testing, training = self.testing_slices()[0]
             results_1.append(self.sim_measure(training, testing, distance='euclidean'))
             # results_2.append(self.sim_measure(training, testing, distance='euclidean', weight_type='none'))
@@ -369,11 +389,13 @@ class RelationSet:
         # print evaluate_results(flatten(results_6))
         self.clear_cache()
 
-for f in glob.glob('./relations/*.txt'):
+for f in glob.glob('./relations/capitals.txt'):
+    # name = re.match('.*/([a-z]*).txt',self.filename).group(1)
+    # print evaluate_svm_files(name)
+
     print f
     our_set = RelationSet.create_from_file(f)
-    our_set.find_new()
-    print
+    our_set.find_new_svm()
 
 
 #our_set = RelationSet.create_from_file('./currency.txt')

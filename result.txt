@@ -150,307 +150,307 @@ w   Cincinnati-Pennsylvania
 r   Billings-Montana
 
 ./relations/family.txt
-himself-herself
-Uncle-Aunt
-father-daughter
-brother-daughter
-uncle-niece
-nephew-daughter
-son-mother
-uncle-mother
-brother-mother
-brother-niece
-Uncle-Auntie
-uncle-grandmother
-boys-girls
-nephew-granddaughter
-uncle-daughter
-son-niece
-nephew-mother
-uncle-sister
-brother-aunt
-brothers-sister
-father-niece
-grandfather-granddaughter
-grandson-niece
-Uncle-Aunty
-Brother-Sister
-nephew-aunt
-baritone-soprano
-Uncle-Grandma
-uncle-granddaughter
-nephew-sister
-father-grandmother
-grandson-daughter
-He-She
-brothers-mother
-father-sister
-brother-sisters
-uncle-Aunt
-Grandpa-Grandma
-father-aunt
-son-granddaughter
-nephew-grandmother
-schoolboy-schoolgirl
-boyhood-girlhood
-his-herself
-brothers-daughters
-brother-grandmother
-brothers-daughter
-grandfather-niece
-grandfather-aunt
-Grandpa-Aunt
-him-her
-brother-granddaughter
-Uncle-Grandmother
-he-her
-Grandfather-Grandmother
-grandfather-mother
-sons-daughter
-nephew-stepdaughter
-brother-stepdaughter
-Uncle-Mama
-brothers-niece
-Uncle-grandma
-brother-Aunt
-father-granddaughter
-him-herself
-Uncle-minx
-Uncle-auntie
-brother-girl
-him-she
-Father-Sister
-he-herself
-son-sister
-grandfather-Aunt
-Uncle-Granny
-grandson-grandmother
-grandfather-daughter
-uncles-Aunt
-Brother-Aunt
-brothers-Aunt
-brothers-aunt
-uncles-sisters
-brother-daughters
-uncle-girl
-uncles-aunts
-Uncle-mother
-Uncle-housewife
-Father-Mother
-Uncle-grandmother
-Jr-Marie
-Uncle-daughter
-brothers-girl
-Uncle-aunt
-uncle-stepdaughter
-brothers-grandmother
-son-stepdaughter
-grandpa-Aunt
-his-hers
-Uncle-Mum
-nephew-girl
-dad-mother
+r   himself-herself
+r   Uncle-Aunt
+w   father-daughter
+w   brother-daughter
+w   uncle-niece
+w   nephew-daughter
+w   son-mother
+w   uncle-mother
+w   brother-mother
+w   brother-niece
+r   Uncle-Auntie
+w   uncle-grandmother
+r   boys-girls
+w   nephew-granddaughter
+w   uncle-daughter
+w   son-niece
+w   nephew-mother
+w   uncle-sister
+w   brother-aunt
+w   brothers-sister
+w   father-niece
+w   grandfather-granddaughter
+w   grandson-niece
+r   Uncle-Aunty
+r   Brother-Sister
+w   nephew-aunt
+r   baritone-soprano !!!
+w   Uncle-Grandma
+w   uncle-granddaughter
+w   nephew-sister
+w   father-grandmother
+w   grandson-daughter
+r   He-She
+w   brothers-mother
+w   father-sister
+w   brother-sisters
+r   uncle-Aunt
+r   Grandpa-Grandma
+w   father-aunt
+w   son-granddaughter
+w   nephew-grandmother
+r   schoolboy-schoolgirl
+r   boyhood-girlhood
+w   his-herself
+w   brothers-daughters
+w   brother-grandmother
+w   brothers-daughter
+w   grandfather-niece
+w   grandfather-aunt
+w   Grandpa-Aunt
+r   him-her
+w   brother-granddaughter
+w   Uncle-Grandmother
+w   he-her
+r   Grandfather-Grandmother
+w   grandfather-mother
+w   sons-daughter
+w   nephew-stepdaughter
+w   brother-stepdaughter
+w   Uncle-Mama
+w   brothers-niece
+w   Uncle-grandma
+w   brother-Aunt
+w   father-granddaughter
+w   him-herself
+w   Uncle-minx
+r   Uncle-auntie
+w   brother-girl
+w   him-she
+w   Father-Sister
+w   he-herself
+w   son-sister
+w   grandfather-Aunt
+w   Uncle-Granny
+w   grandson-grandmother
+w   grandfather-daughter
+w   uncles-Aunt
+w   Brother-Aunt
+w   brothers-Aunt
+w   brothers-aunt
+w   uncles-sisters
+w   brother-daughters
+w   uncle-girl
+w   uncles-aunts
+w   Uncle-mother
+w   Uncle-housewife
+r   Father-Mother
+w   Uncle-grandmother
+w   Jr-Marie
+w   Uncle-daughter
+w   brothers-girl
+r   Uncle-aunt
+w   uncle-stepdaughter
+w   brothers-grandmother
+w   son-stepdaughter
+w   grandpa-Aunt
+w   his-hers
+w   Uncle-Mum
+w   nephew-girl
+r   dad-mother
 
 ./relations/capitals.txt
-Kiev-Ukraine
-Manila-Philippines
-Warsaw-Poland
-Sydney-Australia
-Seoul-Korea
-Stockholm-Norway
-Dublin-Ireland
-Bogota-Colombia
-Tunis-Tunisia
-Stockholm-Finland
-Caracas-Argentina
-Damascus-Syria
-Caracas-Ecuador
-Moscow-Ukraine
-Prague-Poland
-Budapest-Romania
-Helsinki-Sweden
-Budapest-Poland
-Melbourne-Australia
-Belgrade-Serbia
-Khartoum-Sudan
-Quito-Ecuador
-Belgrade-Croatia
-Delhi-India
-London-Britain
-Dusseldorf-Germany
-Cairo-Tunisia
-Caracas-Bolivia
-Stockholm-Denmark
-Budapest-Slovakia
-Bogota-Ecuador
-Caracas-Colombia
-Sofia-Bulgaria
-Milan-Italy
-Caracas-Chile
-Cairo-Algeria
-Frankfurt-Germany
-Budapest-Austria
-Caracas-Brazil
-Budapest-Germany
-Bangkok-Malaysia
-Vienna-Austria
-Riga-Latvia
-Kiev-Moldova
-London-UK
-Kiev-Latvia
-Cairo-Morocco
-Prague-Slovakia
-Moscow-Poland
-Caracas-Honduras
-Bogota-Argentina
-Kiev-Russia
-Budapest-Croatia
-Paris-Italy
-Helsinki-Norway
-Havana-Argentina
-Munich-Germany
-Kiev-Belarus
-Moscow-Belarus
-Budapest-Slovenia
-Caracas-Paraguay
-Seoul-Japan
-Kiev-Slovakia
-Amsterdam-Netherlands
-Havana-Venezuela
-Warsaw-Hungary
-Belgrade-Slovenia
-Paris-Germany
-Madrid-Portugal
-Kiev-Hungary
-Caracas-Uruguay
-Moscow-Latvia
-Kiev-Romania
-Algiers-Algeria
-Prague-Hungary
-Brisbane-Australia
-Bogota-Chile
-Caracas-Nicaragua
-Vienna-Germany
-Kiev-Lithuania
-Brussels-EU
-Bangkok-Indonesia
-Bogota-Paraguay
-Kiev-Poland
-Helsinki-Slovakia
-Budapest-Bulgaria
-Kiev-Slovenia
-Paris-Belgium
-Shanghai-China
-Moscow-Slovakia
-Moscow-Kazakhstan
-Kiev-Bulgaria
-Montreal-Canada
-Stockholm-Swedes
-Tunis-Algeria
-Budapest-Latvia
-Cairo-Italy
-Warsaw-Germany
-Bogota-Venezuela
-Tunis-Egypt
+r   Kiev-Ukraine
+r   Manila-Philippines
+r   Warsaw-Poland
+p   Sydney-Australia
+r   Seoul-Korea
+w   Stockholm-Norway
+r   Dublin-Ireland
+r   Bogota-Colombia
+r   Tunis-Tunisia
+w   Stockholm-Finland
+w   Caracas-Argentina
+r   Damascus-Syria
+w   Caracas-Ecuador
+w   Moscow-Ukraine
+w   Prague-Poland
+w   Budapest-Romania
+w   Helsinki-Sweden
+w   Budapest-Poland
+p   Melbourne-Australia
+r   Belgrade-Serbia
+r   Khartoum-Sudan
+r   Quito-Ecuador
+w   Belgrade-Croatia
+r   Delhi-India
+r   London-Britain
+p   Dusseldorf-Germany
+w   Cairo-Tunisia
+w   Caracas-Bolivia
+w   Stockholm-Denmark
+w   Budapest-Slovakia
+w   Bogota-Ecuador
+w   Caracas-Colombia
+r   Sofia-Bulgaria
+p   Milan-Italy
+w   Caracas-Chile
+w   Cairo-Algeria
+p   Frankfurt-Germany
+w   Budapest-Austria
+w   Caracas-Brazil
+w   Budapest-Germany
+w   Bangkok-Malaysia
+r   Vienna-Austria
+r   Riga-Latvia
+w   Kiev-Moldova
+r   London-UK !!!
+w   Kiev-Latvia
+w   Cairo-Morocco
+w   Prague-Slovakia
+w   Moscow-Poland
+w   Caracas-Honduras
+w   Bogota-Argentina
+w   Kiev-Russia
+w   Budapest-Croatia
+w   Paris-Italy
+w   Helsinki-Norway
+w   Havana-Argentina
+p   Munich-Germany
+w   Kiev-Belarus
+w   Moscow-Belarus
+w   Budapest-Slovenia
+w   Caracas-Paraguay
+w   Seoul-Japan
+w   Kiev-Slovakia
+r   Amsterdam-Netherlands
+w   Havana-Venezuela
+w   Warsaw-Hungary
+w   Belgrade-Slovenia
+w   Paris-Germany
+w   Madrid-Portugal
+w   Kiev-Hungary
+w   Caracas-Uruguay
+w   Moscow-Latvia
+w   Kiev-Romania
+r   Algiers-Algeria
+w   Prague-Hungary
+p   Brisbane-Australia
+w   Bogota-Chile
+w   Caracas-Nicaragua
+w   Vienna-Germany
+w   Kiev-Lithuania
+r   Brussels-EU !!!
+w   Bangkok-Indonesia
+w   Bogota-Paraguay
+w   Kiev-Poland
+w   Helsinki-Slovakia
+w   Budapest-Bulgaria
+w   Kiev-Slovenia
+w   Paris-Belgium
+p   Shanghai-China
+w   Moscow-Slovakia
+w   Moscow-Kazakhstan
+w   Kiev-Bulgaria
+p   Montreal-Canada
+w   Stockholm-Swedes
+w   Tunis-Algeria
+w   Budapest-Latvia
+w   Cairo-Italy
+w   Warsaw-Germany
+w   Bogota-Venezuela
+w   Tunis-Egypt
 
 ./relations/currency.txt
-Poland-forint
-Russia-hryvnia
-Argentina-peso
-Turkey-lira
-Philippines-peso
-Belarus-hryvnia
-Germany-forint
-Lithuania-hryvnia
-Romania-hryvnia
-Kazakhstan-hryvnia
-Ukraine-ruble
-Moldova-hryvnia
-Colombia-peso
-Romania-forint
-Chile-peso
-Austria-forint
-Peru-peso
-Indonesia-ringgit
-Poland-hryvnia
-Lithuania-forint
-Uzbekistan-hryvnia
-Latvia-hryvnia
-France-franc
-Bulgaria-hryvnia
-Azerbaijan-hryvnia
-Hungary-zloty
-Romania-zloty
-Brazil-peso
-Ukraine-forint
-Croatia-hryvnia
-Venezuela-peso
-Slovakia-forint
-Pakistan-rupee
-Germany-zloty
-Guatemala-peso
-Russia-forint
-Belarus-ruble
-Ecuador-peso
-Kazakhstan-ruble
-Armenia-hryvnia
-Hungary-hryvnia
-Estonia-hryvnia
-Israel-shekel
-Albania-hryvnia
-Switzerland-franc
-Croatia-forint
-India-rupees
-Brazil-rupee
-Europe-forint
-Argentina-hryvnia
-Lithuania-zloty
-Germany-euro
-Italy-lira
-Poland-leu
-Slovakia-hryvnia
-Belgium-forint
-Bulgaria-forint
-Bangladesh-rupee
-Russia-zloty
-Ghana-naira
-Germany-franc
-Latvia-forint
-Spain-peso
-Lithuania-ruble
-Denmark-krona
-Italy-forint
-Norway-krone
-Honduras-peso
-Germany-hryvnia
-Morocco-lira
-Norway-krona
-Brazil-forint
-Lithuania-leu
-Rumania-hryvnia
-Serbia-hryvnia
-Spain-forint
-Hungary-leu
-Nicaragua-peso
-Uruguay-peso
-Thailand-ringgit
-Croatia-zloty
-Argentina-rupee
-Uzbekistan-ruble
-Bolivia-peso
-Europe-zloty
-Malaysia-rupee
-Brazil-hryvnia
-Africa-rand
-Albania-forint
-Russia-rubles
-Turkey-forint
-Bulgaria-zloty
-Austria-hryvnia
-Croatia-leu
-Australia-rupee
-USA-hryvnia
-Argentina-forint
-Brazil-zloty
-Slovakia-zloty
-Sweden-forint
+w   Poland-forint
+w   Russia-hryvnia
+r   Argentina-peso
+r   Turkey-lira
+r   Philippines-peso
+w   Belarus-hryvnia
+w   Germany-forint
+w   Lithuania-hryvnia
+w   Romania-hryvnia
+w   Kazakhstan-hryvnia
+w   Ukraine-ruble
+w   Moldova-hryvnia
+r   Colombia-peso
+w   Romania-forint
+r   Chile-peso
+w   Austria-forint
+r   Peru-peso
+w   Indonesia-ringgit
+w   Poland-hryvnia
+w   Lithuania-forint
+w   Uzbekistan-hryvnia
+w   Latvia-hryvnia
+r   France-franc
+w   Bulgaria-hryvnia
+w   Azerbaijan-hryvnia
+w   Hungary-zloty
+w   Romania-zloty
+r   Brazil-peso
+w   Ukraine-forint
+w   Croatia-hryvnia
+w   Venezuela-peso
+w   Slovakia-forint
+r   Pakistan-rupee
+w   Germany-zloty
+w   Guatemala-peso
+w   Russia-forint
+r   Belarus-ruble
+w   Ecuador-peso
+w   Kazakhstan-ruble
+w   Armenia-hryvnia
+w   Hungary-hryvnia
+w   Estonia-hryvnia
+r   Israel-shekel
+w   Albania-hryvnia
+r   Switzerland-franc
+w   Croatia-forint
+p   India-rupees
+w   Brazil-rupee
+w   Europe-forint
+w   Argentina-hryvnia
+w   Lithuania-zloty
+r   Germany-euro
+r   Italy-lira
+w   Poland-leu
+w   Slovakia-hryvnia
+w   Belgium-forint
+w   Bulgaria-forint
+r   Bangladesh-rupee
+w   Russia-zloty
+w   Ghana-naira
+w   Germany-franc
+w   Latvia-forint
+w   Spain-peso
+w   Lithuania-ruble
+r   Denmark-krona
+w   Italy-forint
+r   Norway-krone
+w   Honduras-peso
+w   Germany-hryvnia
+w   Morocco-lira
+w   Norway-krona
+w   Brazil-forint
+w   Lithuania-leu
+w   Rumania-hryvnia
+w   Serbia-hryvnia
+w   Spain-forint
+w   Hungary-leu
+w   Nicaragua-peso
+r   Uruguay-peso
+w   Thailand-ringgit
+w   Croatia-zloty
+w   Argentina-rupee
+w   Uzbekistan-ruble
+w   Bolivia-peso
+w   Europe-zloty
+w   Malaysia-rupee
+w   Brazil-hryvnia
+w   Africa-rand
+w   Albania-forint
+p   Russia-rubles
+w   Turkey-forint
+w   Bulgaria-zloty
+w   Austria-hryvnia
+w   Croatia-leu
+w   Australia-rupee
+w   USA-hryvnia
+w   Argentina-forint
+w   Brazil-zloty
+w   Slovakia-zloty
+w   Sweden-forint
