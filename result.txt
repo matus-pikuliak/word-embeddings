@@ -249,7 +249,7 @@ w   grandpa-Aunt
 w   his-hers
 w   Uncle-Mum
 w   nephew-girl
-r   dad-mother
+p   dad-mother
 
 ./relations/capitals.txt
 r   Kiev-Ukraine

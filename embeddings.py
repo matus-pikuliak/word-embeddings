@@ -4,7 +4,7 @@ from multiprocessing import Pool
 import numpy as np
 import os, time, random, re, glob, datetime
 
-data_folder = '/media/piko/DATA/dp-data/python-files/'
+data_folder = '/media/piko/DATA/dp-data/python-files/predictions/'
 
 
 def file_path(filename):
@@ -36,7 +36,6 @@ def print_values(results):
 
 
 def svm_file(timestamp, average=True, topn=None):
-    print 1
     test_file = glob.glob("%s*%s-test*" % (data_folder, timestamp))[0]
     predict_file = glob.glob("%s*%s-prediction*" % (data_folder, timestamp))[0]
     records = list()
@@ -50,20 +49,7 @@ def svm_file(timestamp, average=True, topn=None):
         for line in f:
             records[i][2] = float(line)
             i += 1
-    #
-    results = sorted(records, key=lambda x: -x[2])
-    for i in xrange(100):
-        print results[i]
-    #
-    exit()
-    return process_results(records)
-
-# SPRACUJE DATA SO SVM-ciek
-# for f in glob.glob('%s*' % data_folder):
-#     match = re.match('.*files/([0-9]*)-train.*', f)
-#     if match is not None:
-#         res = evaluate_svm_files(match.group(1))
-#         print evaluate_results(res)
+    return records
 
 
 def get_timestamp(string):
@@ -71,12 +57,14 @@ def get_timestamp(string):
 
 
 def evaluate_svm_files(name):
-    print evaluate_results(flatten([svm_file(get_timestamp(f)) for f in glob.glob('%s%s*train*' % (data_folder, name))]))
+    print evaluate_results(flatten([process_results(svm_file(get_timestamp(f))) for f in glob.glob('%s%s*train*' % (data_folder, name))]))
 
 
 # for f in glob.glob('./relations/*.txt'):
 #     name = re.match('.*/([a-z]*).txt',f).group(1)
+#     print name
 #     evaluate_svm_files(name)
+
 
 def svm_transform(l):
     return ' '.join(["%d:%f" % (i+1, l[i]) for i in xrange(len(l))])
@@ -147,7 +135,7 @@ class Embedding:
         name = "%s+%s" % (embedding.word, self.word)
         return emb(vector=vector, word=name)
 
-    def neighbours(self, n=200):
+    def neighbours(self, n=100):
         return [emb(record[0]) for record in model.most_similar(self.word, topn=n)]
 
     def svm_sim_transform(self, relations):
@@ -389,28 +377,35 @@ class RelationSet:
         # print evaluate_results(flatten(results_6))
         self.clear_cache()
 
-for f in glob.glob('./relations/capitals.txt'):
-    # name = re.match('.*/([a-z]*).txt',self.filename).group(1)
-    # print evaluate_svm_files(name)
+# capitals 1460237289
+# cities 1460235363
+# currency 1460238812
+# family 1460236170
 
-    print f
+for f in glob.glob('./relations/cities.txt'):
     our_set = RelationSet.create_from_file(f)
-    our_set.find_new_svm()
+    sp = our_set.spatial_candidates()
+    candidates = set([rel.word() for rel in sp])
+    records = svm_file('1460235363')
+    records = [rec for rec in records if rec[1] in candidates]
+    results = sorted(records, key=lambda x: -x[2])
+    for i in xrange(100):
+        print results[i][1]
+    # for i in xrange(len(results)):
+    #     results[i][3] = i+1
+    # with open('sim-family.txt','w+') as f:
+    #     f.write('\n'.join(["%d\t%f" % (res[3], res[2]) for res in results]))
+
+#for f in glob.glob('./relations/currency.txt'):
+    # print f
+    # our_set = RelationSet.create_from_file(f)
+    # our_set.find_new_svm()
 
 
 #our_set = RelationSet.create_from_file('./currency.txt')
 #print our_set.check_candidate_presence()
 
-# ked je vacsi dataset, je to presnejsie alebo menej presne (napr. s jednym vztahom)?
-# ako je na tom SVM a da sa to vylepsit? skusit rozlicne nastavenia...
-
-#2. Ukazkovy vektor
-#Vytvor ukazkovy vektor z triedy ako:
-#   a) najlepsi jedinec
-#   b) priemer
-#   c) vazeny priemer
-#Tento vektor aplikuj na vsetky slova v triede
-#Vyhodnot novonajdene dvojice s testovacimi
+# ked je vacsi dataset, je to presnejsie alebo menej presne (napr. s jednym vztahom)
 
 
 
