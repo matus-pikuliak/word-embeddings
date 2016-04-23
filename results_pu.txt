@@ -288,7 +288,7 @@ r   Italy-euro
 w   Estonia-leu
 w   Ukraine-leu
 w   Romania-euro
-w   Sarawak-ringgit
+p   Sarawak-ringgit
 w   Kazakhstan-ruble
 w   Morocco-kwanza
 w   Rumanians-denar

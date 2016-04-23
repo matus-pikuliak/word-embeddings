@@ -1,11 +1,9 @@
 from gensim.models import Word2Vec
 from scipy.spatial import distance
-from multiprocessing import Pool
 import numpy as np
 import os, time, random, re, glob, datetime
 
-data_folder = '/media/piko/DATA/dp-data/python-files/predictions/'
-
+data_folder = '/media/piko/Decko/bcp/dp-data/python-files/predictions/'
 
 def file_path(filename):
     return '%s%s' % (data_folder, filename)
@@ -74,7 +72,7 @@ with open('./wiki-100k.txt') as f:
     for line in f:
         if not line.startswith('#'):
             top100k.add(line.strip())
-model = Word2Vec.load_word2vec_format('/media/piko/DATA/dp-data/GoogleNews-vectors-negative300.bin', binary=True, selected_words=top100k)
+model = Word2Vec.load_word2vec_format('/media/piko/Decko/bcp/dp-data/GoogleNews-vectors-negative300.bin', binary=True, selected_words=top100k)
 
 embeddings = dict()
 def emb(word=None, vector=None):
@@ -325,12 +323,26 @@ class RelationSet:
             relations = map(create_relation, pairs)
             return RelationSet(relations, filename=filename)
 
-    def check_candidate_presence(self):
-        candidates_words = [candidate.word() for candidate in self.spatial_candidates(filter_positives=False)]
+    def check_candidate_presence(self, size):
+        candidates_words = set()
+        for rel in self.relations:
+            ng_1 = [record[0] for record in model.most_similar(rel.e_1.word, topn=size)]
+            ng_2 = [record[0] for record in model.most_similar(rel.e_2.word, topn=size)]
+            for word in ["%s-%s" % (e_1, e_2) for e_1 in ng_1 for e_2 in ng_2 if e_1 != e_2]:
+                candidates_words.add(word)
         present = 0
         for rel in self.relations:
             present += 1 if rel.word() in candidates_words else 0
         return float(present) / len(self)
+
+    def spatial_candidates_size(self, size):
+        candidates_words = set()
+        for rel in self.relations:
+            ng_1 = [record[0] for record in model.most_similar(rel.e_1.word, topn=size)]
+            ng_2 = [record[0] for record in model.most_similar(rel.e_2.word, topn=size)]
+            for word in ["%s-%s" % (e_1, e_2) for e_1 in ng_1 for e_2 in ng_2 if e_1 != e_2]:
+                candidates_words.add(word)
+        return len(candidates_words)
 
     @staticmethod
     def clear_cache():
@@ -355,26 +367,11 @@ class RelationSet:
 
     def run_sim_test(self):
         print datetime.datetime.now()
-        results_1 = []
-        results_2 = []
-        results_3 = []
-        results_4 = []
-        results_5 = []
-        results_6 = []
+        results = []
         for _ in xrange(5):
             testing, training = self.testing_slices()[0]
-            results_1.append(self.sim_measure(training, testing, distance='euclidean'))
-            # results_2.append(self.sim_measure(training, testing, distance='euclidean', weight_type='none'))
-            # results_3.append(self.sim_measure(training, testing, distance='euclidean', weight_type='normalized'))
-            # results_4.append(self.sim_measure(training, testing))
-            # results_5.append(self.sim_measure(training, testing, weight_type='none'))
-            # results_6.append(self.sim_measure(training, testing, method='max'))
-        print evaluate_results(flatten(results_1))
-        # print evaluate_results(flatten(results_2))
-        # print evaluate_results(flatten(results_3))
-        # print evaluate_results(flatten(results_4))
-        # print evaluate_results(flatten(results_5))
-        # print evaluate_results(flatten(results_6))
+            results.append(self.sim_measure(training, testing, distance='euclidean'))
+        print evaluate_results(flatten(results))
         self.clear_cache()
 
 # capitals 1460237289
@@ -382,15 +379,19 @@ class RelationSet:
 # currency 1460238812
 # family 1460236170
 
-for f in glob.glob('./relations/cities.txt'):
+for f in glob.glob('./relations/*.txt'):
     our_set = RelationSet.create_from_file(f)
-    sp = our_set.spatial_candidates()
-    candidates = set([rel.word() for rel in sp])
-    records = svm_file('1460235363')
-    records = [rec for rec in records if rec[1] in candidates]
-    results = sorted(records, key=lambda x: -x[2])
-    for i in xrange(100):
-        print results[i][1]
+    print f
+    for n in range(10,200,10):
+        print "%i\t%s" % (n, our_set.spatial_candidates_size(n))
+        our_set.clear_cache()
+    # sp = our_set.spatial_candidates()
+    # candidates = set([rel.word() for rel in sp])
+    # records = svm_file('1460235363')
+    # records = [rec for rec in records if rec[1] in candidates]
+    # results = sorted(records, key=lambda x: -x[2])
+    # for i in xrange(100):
+    #     print results[i][1]
     # for i in xrange(len(results)):
     #     results[i][3] = i+1
     # with open('sim-family.txt','w+') as f:
