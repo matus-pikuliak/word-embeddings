@@ -293,7 +293,6 @@ class RelationSet:
                 raise KeyError('Wrong method parameter')
 
             results.append([positive, name, final_similarity, 0])
-        print_values(results)
         return process_results(results)
 
     def find_new(self, n=100):
@@ -399,7 +398,7 @@ class RelationSet:
 
 for f in glob.glob('./relations/family.txt'):
     our_set = RelationSet.create_from_file(f)
-    our_set.run_sim_test()
+
     # for n in range(10, 200, 10):
     #     print "%s" % (our_set.check_candidate_presence(n))
     # print f
