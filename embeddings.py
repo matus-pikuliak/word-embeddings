@@ -3,7 +3,7 @@ from scipy.spatial import distance
 import numpy as np
 import os, time, random, re, glob, datetime
 
-data_folder = '/media/piko/Decko/bcp/dp-data/python-files/predictions/'
+data_folder = '/media/piko/Decko/bcp/dp-data/python-files/new_predictions/'
 
 def file_path(filename):
     return '%s%s' % (data_folder, filename)
@@ -48,6 +48,13 @@ def svm_file(timestamp, average=True, topn=None):
             records[i][2] = float(line)
             i += 1
     return records
+
+# SVM TOP 100
+# records = svm_file('1461431268')
+# results = sorted(records, key=lambda x: -x[2])
+# for i in xrange(100):
+#     print results[i][1]
+# exit()
 
 
 def get_timestamp(string):
@@ -292,11 +299,12 @@ class RelationSet:
     def find_new(self, n=100):
         candidates = self.spatial_candidates()
         results = list()
-        weights = self.softmax_list([self.rel_weight(rel, 'euclidean') for rel in self.relations])
+        #weights = self.softmax_list([self.rel_weight(rel, 'euclidean') for rel in self.relations])
+        weights = [float(1)/len(self.relations) for _ in xrange(len(self.relations))]
         for rel in candidates:
             positive = 0
             name = rel.word()
-            similarities = [rel.cosine_similarity(x) for x in self.relations]
+            similarities = [rel.euclidean_similarity(x) for x in self.relations]
             final_similarity = sum([
                 weights[i] * similarities[i]
                 for i in xrange(len(similarities))
@@ -367,24 +375,36 @@ class RelationSet:
 
     def run_sim_test(self):
         print datetime.datetime.now()
-        results = []
+        results_1 = []
+        results_2 = []
+        results_3 = []
+        results_4 = []
+        results_5 = []
+        results_6 = []
         for _ in xrange(5):
             testing, training = self.testing_slices()[0]
-            results.append(self.sim_measure(training, testing, distance='euclidean'))
-        print evaluate_results(flatten(results))
+            results_1.append(self.sim_measure(training, testing, distance='euclidean'))
+            results_2.append(self.sim_measure(training, testing, distance='euclidean', weight_type='none'))
+            results_3.append(self.sim_measure(training, testing, distance='euclidean', weight_type='normalized'))
+            results_4.append(self.sim_measure(training, testing))
+            results_5.append(self.sim_measure(training, testing, weight_type='none'))
+            results_6.append(self.sim_measure(training, testing, method='max'))
+        print evaluate_results(flatten(results_1))
+        print evaluate_results(flatten(results_2))
+        print evaluate_results(flatten(results_3))
+        print evaluate_results(flatten(results_4))
+        print evaluate_results(flatten(results_5))
+        print evaluate_results(flatten(results_6))
         self.clear_cache()
 
-# capitals 1460237289
-# cities 1460235363
-# currency 1460238812
-# family 1460236170
-
-for f in glob.glob('./relations/*.txt'):
+for f in glob.glob('./relations/family.txt'):
     our_set = RelationSet.create_from_file(f)
-    print f
-    for n in range(10,200,10):
-        print "%i\t%s" % (n, our_set.spatial_candidates_size(n))
-        our_set.clear_cache()
+    our_set.run_sim_test()
+    # for n in range(10, 200, 10):
+    #     print "%s" % (our_set.check_candidate_presence(n))
+    # print f
+    #
+    #     our_set.clear_cache()
     # sp = our_set.spatial_candidates()
     # candidates = set([rel.word() for rel in sp])
     # records = svm_file('1460235363')
@@ -401,13 +421,3 @@ for f in glob.glob('./relations/*.txt'):
     # print f
     # our_set = RelationSet.create_from_file(f)
     # our_set.find_new_svm()
-
-
-#our_set = RelationSet.create_from_file('./currency.txt')
-#print our_set.check_candidate_presence()
-
-# ked je vacsi dataset, je to presnejsie alebo menej presne (napr. s jednym vztahom)
-
-
-
-
