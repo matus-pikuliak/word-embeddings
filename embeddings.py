@@ -396,9 +396,10 @@ class RelationSet:
         print evaluate_results(flatten(results_6))
         self.clear_cache()
 
+import random
 for f in glob.glob('./relations/family.txt'):
     our_set = RelationSet.create_from_file(f)
-
+    our_set.find_new()
     # for n in range(10, 200, 10):
     #     print "%s" % (our_set.check_candidate_presence(n))
     # print f
