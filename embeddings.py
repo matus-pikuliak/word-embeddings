@@ -27,12 +27,6 @@ def evaluate_results(results):
     return mean, std, median
 
 
-def print_values(results):
-    results = sorted(results, key=lambda x: -x[2])
-    with open('sims-family.txt','w+') as f:
-        f.write('\n'.join([str(x[2]) for x in results]))
-
-
 def svm_file(timestamp, average=True, topn=None):
     test_file = glob.glob("%s*%s-test*" % (data_folder, timestamp))[0]
     predict_file = glob.glob("%s*%s-prediction*" % (data_folder, timestamp))[0]
@@ -49,8 +43,8 @@ def svm_file(timestamp, average=True, topn=None):
             i += 1
     return records
 
-# SVM TOP 100
-# records = svm_file('1461431268')
+#SVM TOP 100
+# records = svm_file('1461433289')
 # results = sorted(records, key=lambda x: -x[2])
 # for i in xrange(100):
 #     print results[i][1]
@@ -303,7 +297,7 @@ class RelationSet:
         for rel in candidates:
             positive = 0
             name = rel.word()
-            similarities = [rel.euclidean_similarity(x) for x in self.relations]
+            similarities = [rel.cosine_similarity(x) for x in self.relations]
             final_similarity = sum([
                 weights[i] * similarities[i]
                 for i in xrange(len(similarities))
@@ -397,7 +391,7 @@ class RelationSet:
         self.clear_cache()
 
 import random
-for f in glob.glob('./relations/family.txt'):
+for f in glob.glob('./relations/capitals.txt'):
     our_set = RelationSet.create_from_file(f)
     our_set.find_new()
     # for n in range(10, 200, 10):

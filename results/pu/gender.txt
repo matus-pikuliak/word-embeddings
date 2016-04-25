@@ -77,7 +77,7 @@ w   Honorius-Archduchess
 w   Mountstuart-Bovary
 w   Saturninus-Pavlovna
 w   Constantius-Ch'in
-p-u dad-mother
+r   dad-mother
 w   Parthia-Fyodorovna
 w   brother-son
 p-m fathers-mothers

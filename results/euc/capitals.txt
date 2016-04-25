@@ -1,100 +1,100 @@
-Kiev-Ukraine
-Sydney-Australia
-Manila-Philippines
-Dublin-Ireland
-Warsaw-Poland
-Damascus-Syria
-Khartoum-Sudan
-London-Britain
-Teheran-Iran
-Delhi-India
-Belgrade-Serbia
-Melbourne-Australia
-Seoul-Korea
-Honolulu-Hawaii
-Shanghai-China
-Milan-Italy
-Sofia-Bulgaria
-London-UK
-Brisbane-Australia
-Soldaten-Deutschlands
-Edinburgh-Scotland
-Sceaux-Cayrol
-Moscow-Ukraine
-Amsterdam-Netherlands
-Tunis-Tunisia
-Sceaux-Bologne
-Glasgow-Scotland
-Babylone-Cayrol
-Malesherbes-Cayrol
-Budapest-Romania
-Prague-Poland
-Moscow-Russian
-Brussels-EU
-Parijs-Cayrol
-Munich-Germany
-Turm-Deutschlands
-Dusseldorf-Germany
-Sammlung-Deutschlands
-Singapore-Malaysia
-Anlage-Deutschlands
-Bogota-Colombia
-Vienna-Austria
-Babylone-Bologne
-Malesherbes-Bologne
-Polignac-Cayrol
-Stockholm-Norway
-Cologne-Germany
-Frankfurt-Germany
-German-Germany
-Luis-Jorge
-Bulgarian-Bulgaria
-Tokyo-Japanese
-Turm-Vaterland
-Manila-Philippine
-Melun-France
-Miguel-Luis
-Hamburg-Germany
-Montalembert-Cayrol
-Quito-Ecuador
-Choisy-Bologne
-Montreal-Canada
-Barcelona-Spain
-Neuburg-Vaterland
-Parijs-Bologne
-Beijing-Chinese
-Conciergerie-Cayrol
-Soldaten-Vaterland
-Quijote-Castilians
-Conciergerie-Bologne
-Jorge-Luis
-Nikolaevna-Russia's
-Budapest-Poland
-Riga-Latvia
-Choisy-Cayrol
-Melbourne-Adelaide
-Chinese-China
-Nikolaevna-Razumov
-Winnipeg-Manitoba
-Seville-Spain
-Maslova-Razumov
-Neuburg-Deutschlands
-Norwegian-Norway
-Moscow-Belarus
-Brazilian-Brazil
-Julio-Luis
-Israeli-Israel
-Brisbane-Adelaide
-Parisiens-Cayrol
-Parisiens-Bologne
-Egyptian-Egypt
-Caracas-Bolivia
-Chilean-Chile
-Deutschen-Deutschlands
-Tampa-Florida
-Polignac-Bologne
-Paris-Belgium
-Miguel-Jorge
-Helsinki-Sweden
-Razumov-Russia's
-Colombian-Colombia
+r   Kiev-Ukraine
+p-u Sydney-Australia
+r   Manila-Philippines
+r   Dublin-Ireland
+r   Warsaw-Poland
+r   Damascus-Syria
+r   Khartoum-Sudan
+r   London-Britain
+r   Teheran-Iran
+r   Delhi-India
+r   Belgrade-Serbia
+p-u Melbourne-Australia
+r   Seoul-Korea
+r   Honolulu-Hawaii
+p-u Shanghai-China
+p-u Milan-Italy
+r   Sofia-Bulgaria
+r   London-UK
+p-u Brisbane-Australia
+w   Soldaten-Deutschlands
+r   Edinburgh-Scotland
+w   Sceaux-Cayrol
+w   Moscow-Ukraine
+r   Amsterdam-Netherlands
+r   Tunis-Tunisia
+w   Sceaux-Bologne
+w   Glasgow-Scotland
+w   Babylone-Cayrol
+w   Malesherbes-Cayrol
+w   Budapest-Romania
+w   Prague-Poland
+p-m Moscow-Russian
+r   Brussels-EU
+w   Parijs-Cayrol
+p-u Munich-Germany
+w   Turm-Deutschlands
+p-u Dusseldorf-Germany
+w   Sammlung-Deutschlands
+w   Singapore-Malaysia
+w   Anlage-Deutschlands
+r   Bogota-Colombia
+r   Vienna-Austria
+w   Babylone-Bologne
+w   Malesherbes-Bologne
+w   Polignac-Cayrol
+w   Stockholm-Norway
+p-u Cologne-Germany
+p-u Frankfurt-Germany
+w   German-Germany
+w   Luis-Jorge
+w   Bulgarian-Bulgaria
+p-m Tokyo-Japanese
+w   Turm-Vaterland
+p-m Manila-Philippine
+p-u Melun-France
+w   Miguel-Luis
+p-u Hamburg-Germany
+w   Montalembert-Cayrol
+r   Quito-Ecuador
+w   Choisy-Bologne
+p-u Montreal-Canada
+p-u Barcelona-Spain
+w   Neuburg-Vaterland
+w   Parijs-Bologne
+p-m Beijing-Chinese
+w   Conciergerie-Cayrol
+w   Soldaten-Vaterland
+w   Quijote-Castilians
+w   Conciergerie-Bologne
+w   Jorge-Luis
+w   Nikolaevna-Russia's
+w   Budapest-Poland
+r   Riga-Latvia
+w   Choisy-Cayrol
+w   Melbourne-Adelaide
+w   Chinese-China
+w   Nikolaevna-Razumov
+r   Winnipeg-Manitoba
+p-u Seville-Spain
+w   Maslova-Razumov
+w   Neuburg-Deutschlands
+w   Norwegian-Norway
+w   Moscow-Belarus
+w   Brazilian-Brazil
+w   Julio-Luis
+w   Israeli-Israel
+w   Brisbane-Adelaide
+w   Parisiens-Cayrol
+w   Parisiens-Bologne
+w   Egyptian-Egypt
+w   Caracas-Bolivia
+w   Chilean-Chile
+w   Deutschen-Deutschlands
+p-u Tampa-Florida
+w   Polignac-Bologne
+w   Paris-Belgium
+w   Miguel-Jorge
+w   Helsinki-Sweden
+w   Razumov-Russia's
+w   Colombian-Colombia
