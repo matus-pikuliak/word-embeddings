@@ -1,100 +1,100 @@
-Poland-forint
-Russia-hryvnia
-Argentina-peso
-Turkey-lira
-Philippines-peso
-Belarus-hryvnia
-Germany-forint
-Lithuania-hryvnia
-Romania-hryvnia
-Kazakhstan-hryvnia
-Ukraine-ruble
-Moldova-hryvnia
-Colombia-peso
-Romania-forint
-Chile-peso
-Austria-forint
-Poland-hryvnia
-Peru-peso
-Indonesia-ringgit
-Lithuania-forint
-Uzbekistan-hryvnia
-Latvia-hryvnia
-Bulgaria-hryvnia
-France-franc
-Azerbaijan-hryvnia
-Brazil-peso
-Hungary-zloty
-Romania-zloty
-Ukraine-forint
-Croatia-hryvnia
-Venezuela-peso
-Slovakia-forint
-Pakistan-rupee
-Guatemala-peso
-Russia-forint
-Germany-zloty
-Belarus-ruble
-Armenia-hryvnia
-Ecuador-peso
-Kazakhstan-ruble
-Hungary-hryvnia
-Estonia-hryvnia
-Israel-shekel
-Albania-hryvnia
-India-rupees
-Switzerland-franc
-Croatia-forint
-Brazil-rupee
-Argentina-hryvnia
-Europe-forint
-Germany-euro
-Italy-lira
-Poland-leu
-Lithuania-zloty
-Slovakia-hryvnia
-Bulgaria-forint
-Belgium-forint
-Bangladesh-rupee
-Russia-zloty
-Ghana-naira
-Germany-franc
-Latvia-forint
-Denmark-krona
-Spain-peso
-Lithuania-ruble
-Italy-forint
-Honduras-peso
-Norway-krone
-Germany-hryvnia
-Morocco-lira
-Norway-krona
-Lithuania-leu
-Brazil-forint
-Serbia-hryvnia
-Rumania-hryvnia
-Spain-forint
-Hungary-leu
-Uruguay-peso
-Nicaragua-peso
-Argentina-rupee
-Bolivia-peso
-Uzbekistan-ruble
-Brazil-hryvnia
-Croatia-zloty
-Thailand-ringgit
-Malaysia-rupee
-Russia-rubles
-Europe-zloty
-Africa-rand
-Albania-forint
-Turkey-forint
-Croatia-leu
-Bulgaria-zloty
-Austria-hryvnia
-Australia-rupee
-USA-hryvnia
-Argentina-forint
-Brazil-zloty
-Finland-krona
-Benin-naira
+w	Poland-forint
+w	Russia-hryvnia
+r	Argentina-peso
+r	Turkey-lira
+r	Philippines-peso
+w	Belarus-hryvnia
+w	Germany-forint
+w	Lithuania-hryvnia
+w	Romania-hryvnia
+w	Kazakhstan-hryvnia
+w	Ukraine-ruble
+w	Moldova-hryvnia
+r	Colombia-peso
+w	Romania-forint
+r	Chile-peso
+w	Austria-forint
+w	Poland-hryvnia
+w	Peru-peso
+w	Indonesia-ringgit
+w	Lithuania-forint
+w	Uzbekistan-hryvnia
+w	Latvia-hryvnia
+w	Bulgaria-hryvnia
+r	France-franc
+w	Azerbaijan-hryvnia
+w	Brazil-peso
+w	Hungary-zloty
+w	Romania-zloty
+w	Ukraine-forint
+w	Croatia-hryvnia
+w	Venezuela-peso
+w	Slovakia-forint
+r	Pakistan-rupee
+w	Guatemala-peso
+w	Russia-forint
+w	Germany-zloty
+r	Belarus-ruble
+w	Armenia-hryvnia
+w	Ecuador-peso
+w	Kazakhstan-ruble
+w	Hungary-hryvnia
+w	Estonia-hryvnia
+r	Israel-shekel
+w	Albania-hryvnia
+p-m	India-rupees
+r	Switzerland-franc
+w	Croatia-forint
+w	Brazil-rupee
+w	Argentina-hryvnia
+w	Europe-forint
+r	Germany-euro
+r	Italy-lira
+w	Poland-leu
+w	Lithuania-zloty
+w	Slovakia-hryvnia
+w	Bulgaria-forint
+w	Belgium-forint
+w	Bangladesh-rupee
+w	Russia-zloty
+w	Ghana-naira
+w	Germany-franc
+w	Latvia-forint
+w	Denmark-krona
+r	Spain-peso
+w	Lithuania-ruble
+w	Italy-forint
+w	Honduras-peso
+r	Norway-krone
+w	Germany-hryvnia
+w	Morocco-lira
+w	Norway-krona
+w	Lithuania-leu
+w	Brazil-forint
+w	Serbia-hryvnia
+w	Rumania-hryvnia
+w	Spain-forint
+w	Hungary-leu
+r	Uruguay-peso
+w	Nicaragua-peso
+w	Argentina-rupee
+w	Bolivia-peso
+w	Uzbekistan-ruble
+w	Brazil-hryvnia
+w	Croatia-zloty
+w	Thailand-ringgit
+w	Malaysia-rupee
+p-m	Russia-rubles
+w	Europe-zloty
+w	Africa-rand
+w	Albania-forint
+w	Turkey-forint
+w	Croatia-leu
+w	Bulgaria-zloty
+w	Austria-hryvnia
+w	Australia-rupee
+w	USA-hryvnia
+w	Argentina-forint
+w	Brazil-zloty
+w	Finland-krona
+w	Benin-naira

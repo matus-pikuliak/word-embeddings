@@ -3,11 +3,20 @@ from scipy.spatial import distance
 import numpy as np
 import os, time, random, re, glob, datetime
 
-data_folder = '/media/piko/Decko/bcp/dp-data/python-files/new_predictions/'
+data_folder = '/media/piko/Decko/bcp/dp-data/python-files/new_predictions_cos/'
 
 def file_path(filename):
     return '%s%s' % (data_folder, filename)
 
+# name = 'capitals'
+# timestamp = 1461631305
+# train_filename = file_path('%s-%d-train-sim_svm' % (name, timestamp))
+# model_filename = file_path('%s-%d-model-sim_svm' % (name, timestamp))
+# test_filename = file_path('%s-%d-test-sim_svm' % (name, timestamp))
+# prediction_filename = file_path('%s-%d-prediction-sim_svm' % (name, timestamp))
+# os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
+# os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
+# exit()
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
@@ -44,11 +53,16 @@ def svm_file(timestamp, average=True, topn=None):
     return records
 
 #SVM TOP 100
-# records = svm_file('1461433289')
-# results = sorted(records, key=lambda x: -x[2])
-# for i in xrange(100):
-#     print results[i][1]
-# exit()
+# cities 1461626389
+# currency 1461625101
+# capitals 1461627217
+# gender 1461623867
+records = svm_file('1461623867')
+results = sorted(records, key=lambda x: -x[2])
+results = [res for res in results if res[0] is False]
+for i in xrange(100):
+    print "?\t%s" % results[i][1]
+exit()
 
 
 def get_timestamp(string):
@@ -218,22 +232,6 @@ class RelationSet:
                 candidates.append(candidate)
         return candidates
 
-    def similarity_svm_generate_files(self):
-        name = re.match('.*/([a-z]*).txt',self.filename).group(1)
-        for testing, training in self.testing_slices():
-            candidates = training.spatial_candidates()
-            examples = self.relations[0::2]
-            training = self.relations[1::2]
-            timestamp = int(time.time())
-            train_filename = file_path('%s-%d-train-sim_svm' % (name,timestamp))
-            model_filename = file_path('%s-%d-model-sim_svm' % (name,timestamp))
-            test_filename = file_path('%s-%d-test-sim_svm' % (name,timestamp))
-            prediction_filename = file_path('%s-%d-prediction-sim_svm' % (name,timestamp))
-            open(train_filename, "wb").write('\n'.join([rel.svm_sim_transform(examples) for rel in training + candidates]))
-            open(test_filename, "wb").write('\n'.join([rel.svm_sim_transform(examples) for rel in testing.relations + candidates]))
-            os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
-            os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
-
     def rel_weight(self, relation, distance):
         if distance == 'euclidean':
             similarities = [relation.euclidean_similarity(rel) for rel in self.relations]
@@ -393,7 +391,7 @@ class RelationSet:
 import random
 for f in glob.glob('./relations/capitals.txt'):
     our_set = RelationSet.create_from_file(f)
-    our_set.find_new()
+    our_set.find_new_simple_svm()
     # for n in range(10, 200, 10):
     #     print "%s" % (our_set.check_candidate_presence(n))
     # print f
