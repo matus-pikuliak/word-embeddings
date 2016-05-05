@@ -94,9 +94,9 @@ class ResultList:
         :return: None
         """
         self.sort()
-        for i in xrange(n):
-            with open(filename, 'w+') as f:
-                f.write("?\t%s" % self[i].name)
+        with open(filename, 'w+') as f:
+            for i in xrange(n):
+                f.write("?\t%s\n" % self[i].name)
 
 
 class ResultFile:

@@ -80,6 +80,13 @@ class Pair:
     """
 
     def __init__(self, embedding_1, embedding_2, positive=False, candidate=False):
+        """
+        Pair is created from two embeddings (1 & 2). positive and candidate are boolean variables indicating
+        status of pair. At least one of them should be False.
+        :param embedding_1, embedding_2: Embedding
+        :param positive: True or False
+        :param candidate: True or False
+        """
         self.e_1 = embedding_1
         self.e_2 = embedding_2
         self.pair_embedding = embedding_2 - embedding_1
@@ -87,29 +94,64 @@ class Pair:
         self.candidate = candidate
 
     def __len__(self):
+        """
+        Length of pair embedding vector
+        :return: integer
+        """
         return len(self.pair_embedding)
 
     def word(self):
+        """
+        Word assigned to given pair, it has a format of word1-word2, e.g. "Paris-France"
+        :return: string
+        """
         return self.pair_embedding.word
 
     def cosine_similarity(self, pair):
+        """
+        Cosine similarity between self and some other pair. It is using data heler to cache results.
+        :param pair: Pair
+        :return: float
+        """
         return data.cosine_similarity(self.pair_embedding, pair.pair_embedding)
 
     def euclidean_similarity(self, pair):
+        """
+        Euclidean similarity between self and some other pair. It is using data heler to cache results.
+        :param pair: Pair
+        :return: float
+        """
         return data.euclidean_similarity(self.pair_embedding, pair.pair_embedding)
 
     def spatial_candidates(self):
+        """
+        Generates candidates for this given pair as product of neighborhood of its two embeddings.
+        :return: list of Pairs
+        """
         ng_1 = self.e_1.neighbours()
         ng_2 = self.e_2.neighbours()
         return [Pair(e_1, e_2, candidate=True) for e_1 in ng_1 for e_2 in ng_2 if e_1 != e_2]
 
     def svm_transform(self, pairs, distance='euclidean'):
+        """
+        Transforms given pairs to SVM sample with values calculated as similarities to given pairs with given distance.
+        :param pairs: list of Pairs
+        :param distance: 'euclidean' or 'cosine'
+        :return: string in SVM sample format. See readme for details.
+        """
         label = self.svm_label()
         values = self.svm_values(pairs, distance)
         comment = self.word()
         return '%d %s # %s' % (label, values, comment)
 
     def svm_values(self, pairs, distance):
+        """
+        Creates the values for SVM sample. These values are the similarities themselves numbered from 1 upwards.
+        E.g. "1:0.255 2:0.133 3:0.445" etc
+        :param pairs: list of Pairs
+        :param distance: 'euclidean' or 'cosine'
+        :return: string in SVM sample values format. See readme for details.
+        """
         if distance == 'euclidean':
             vec = [self.euclidean_similarity(pair) for pair in pairs]
         if distance == 'cosine':
@@ -245,12 +287,12 @@ class PairSet:
         test_filename = svm.svm_file_name(name, timestamp, 'test')
         prediction_filename = svm.svm_file_name(name, timestamp, 'prediction')
 
-        open(train_filename, "wb").write('\n'.join([rel.svm_transform(examples) for rel in positive + candidates]))
-        open(test_filename, "wb").write('\n'.join([rel.svm_transform(examples) for rel in evaluated]))
+        open(train_filename, "wb").write('\n'.join([rel.svm_transform(examples, distance) for rel in positive + candidates]))
+        open(test_filename, "wb").write('\n'.join([rel.svm_transform(examples, distance) for rel in evaluated]))
         os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
         os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
 
-        svm.svm_timestamp_to_results(timestamp)
+        return svm.svm_timestamp_to_results(timestamp)
 
     def find_new_pairs(self, n=100, **kwargs):
         if kwargs['method'] == 'max' or kwargs['method'] == 'average':
