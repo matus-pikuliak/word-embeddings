@@ -2,7 +2,7 @@ from libraries import *
 
 def flatten(l):
     """
-    Take all the elements from list l and extract them to returned array
+    Takes all the elements from list l and extracts them to returned array
     :param l: list of lists
     :return: list
     """
@@ -11,7 +11,7 @@ def flatten(l):
 
 def softmax_list(l):
     """
-    Normalize array l with softmax function
+    Normalizes array l with softmax function
     :param l: list of numbers
     :return: list
     """
@@ -20,24 +20,26 @@ def softmax_list(l):
 
 def normalize_list(l):
     """
-    Normalize array l with softmax function
+    Normalizes array l with softmax function
     :param l: list of numbers
     :return: list
     """
     return [item / sum(l) for item in l]
 
 
-def split(l, split_proportion):
+def print_vector_stats(vec, verbose=True):
     """
-    Split the list l into testing and training set. testing_proportion is indicating what proportion
-    of the original set l will be used as testing items.
-    :param l: list
-    :param testing_proportion: float <0,1>
-    :return: tuple of two lists
+    Prints the statistics - median, std, mean - about given vector
+    Verbose option prints names of metrics aswell.
+    :param vec: list of numbers
+    :param verbose: True or False
+    :return: None
     """
-    size = int(len(l) * split_proportion)
-    if size < 1 or (len(l) - size) < 1:
-        raise AttributeError('One of the sets has non-positive size.')
-    shuffled = list(l)
-    random.shuffle(shuffled)
-    return shuffled[0:size], shuffled[size:]
+    median = float(np.median(vec))
+    std = float(np.std(vec))
+    mean = float(np.mean(vec))
+    output = (median, std, mean)
+    if verbose:
+        print "median: %f\tstd: %f\tmean: %f" % output
+    else:
+        print "%f\t%f\t%f" % output

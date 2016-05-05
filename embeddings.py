@@ -1,51 +1,42 @@
 from libraries import *
+import results_helper as res
+import config
 from helper import *
-from config import *
 
 def file_path(filename):
-    return '%s%s' % (svm_folder, filename)
+    return '%s%s' % (config.svm_folder, filename)
 
 
-def process_results(results):
-    results = sorted(results, key=lambda x: -x[2])
-    for i in xrange(len(results)):
-        results[i][3] = i+1
-    return [float(x[3])/len(results) for x in results if x[0]]
-
-
-def evaluate_results(results):
-    mean = np.mean(results)
-    std = np.std(results)
-    median = np.median(results)
-    return mean, std, median
-
-
-def svm_file(timestamp, average=True, topn=None):
-    test_file = glob.glob("%s*%s-test*" % (svm_folder, timestamp))[0]
-    predict_file = glob.glob("%s*%s-prediction*" % (svm_folder, timestamp))[0]
-    records = list()
+def svm_file(timestamp):
+    test_file = glob.glob("%s*%s-test*" % (config.svm_folder, timestamp))[0]
+    predict_file = glob.glob("%s*%s-prediction*" % (config.svm_folder, timestamp))[0]
+    results = res.ResultList()
     with open(test_file) as f:
         for line in f:
             positive = (line.split()[0] == '1')
             name = line.split('#')[1].strip()
-            records.append([positive, name, 0, 0])
+            results.append(is_positive=positive, name=name)
     with open(predict_file) as f:
         i = 0
         for line in f:
-            records[i][2] = float(line)
+            results[i].score = float(line)
             i += 1
-    records = sorted(records, key=lambda x: -x[2])
-    records = [res for res in records if res[0] is False]
-    for i in xrange(100):
-        print "?\t%s" % records[i][1]
+    return results
 
 
 def get_timestamp(string):
-        return re.match('%s[a-z]*-([0-9]*).*' % svm_folder, string).group(1)
-
+    return re.match('%s[a-z]*-([0-9]*).*' % config.svm_folder, string).group(1)
 
 def evaluate_svm_files(name):
-    print evaluate_results(flatten([process_results(svm_file(get_timestamp(f))) for f in glob.glob('%s%s*train*' % (svm_folder, name))]))
+    files = glob.glob('%s%s*prediction*' % (config.svm_folder, name))
+    timestamps = [get_timestamp(filename) for filename in files]
+    positions = flatten([svm_file(timestamp).positive_positions() for timestamp in timestamps])
+    print_vector_stats(positions)
+
+evaluate_svm_files('capitals')
+exit()
+
+
 
 
 # for f in glob.glob('./relations/*.txt'):
@@ -199,6 +190,8 @@ class RelationSet:
         if candidates is None:
             candidates = training.spatial_candidates()
 
+        print len(candidates)
+
         if weight_type == 'none':
             weights = [float(1)/len(training) for _ in xrange(len(training))]
         elif weight_type == 'normalized':
@@ -208,7 +201,7 @@ class RelationSet:
         else:
             raise KeyError('Wrong weight_type parameter')
 
-        results = list()
+        results = res.ResultList()
         evaluated = testing.relations + candidates
         for rel in evaluated:
             positive = rel.positive
@@ -231,27 +224,23 @@ class RelationSet:
             else:
                 raise KeyError('Wrong method parameter')
 
-            results.append([positive, name, final_similarity, 0])
-        return process_results(results)
+            results.append(is_positive=positive,name=name,score=final_similarity)
+        return results.positive_positions()
 
     def find_new(self, n=100):
         candidates = self.spatial_candidates()
-        results = list()
+        results = res.ResultList()
         #weights = self.softmax_list([self.rel_weight(rel, 'euclidean') for rel in self.relations])
         weights = [float(1)/len(self.relations) for _ in xrange(len(self.relations))]
         for rel in candidates:
-            positive = 0
             name = rel.word()
             similarities = [rel.cosine_similarity(x) for x in self.relations]
             final_similarity = sum([
                 weights[i] * similarities[i]
                 for i in xrange(len(similarities))
             ])
-            results.append([positive, name, final_similarity, 0])
-        results = sorted(results, key=lambda x: -x[2])
-        for result in results[0:n]:
-            print result[1]
-        self.clear_cache()
+            results.append(is_positive=False, name=name, score=final_similarity)
+        results.print_top_n(100)
 
 
     @classmethod
@@ -314,46 +303,41 @@ class RelationSet:
         os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
 
     def testing_and_training_set(self, testing_proportion):
-        testing_pairs, training_pairs = split(self.relations, testing_proportion)
-        return RelationSet(testing_pairs), RelationSet(training_pairs)
+        """
+        Split the set's relations into testing and training set.
+        testing_proportion is indicating what proportion (0.2 means 20% e.g.)
+        of the original set l will be used as testing items.
+        :param testing_proportion: float <0,1>
+        :return: tuple of two sets
+        """
+        size = int(len(self) * testing_proportion)
+        if size < 1 or (len(self) - size) < 1:
+            raise AttributeError('One of the sets has non-positive size.')
+        shuffled = list(self.relations)
+        random.shuffle(shuffled)
+        return RelationSet(shuffled[0:size]), RelationSet(shuffled[size:])
 
-    def run_sim_test(self):
-        print datetime.datetime.now()
-        results_1 = []
-        results_2 = []
-        results_3 = []
-        results_4 = []
-        results_5 = []
-        results_6 = []
-        for _ in xrange(20):
+    def get_positions(self, **kwargs):
+        positions = []
+        for _ in xrange(50):
             testing, training = self.testing_and_training_set(0.2)
-            # results_1.append(self.sim_measure(training, testing, distance='euclidean'))
-            results_2.append(self.sim_measure(training, testing, distance='euclidean', weight_type='none'))
-            # results_3.append(self.sim_measure(training, testing, distance='euclidean', weight_type='normalized'))
-            # results_4.append(self.sim_measure(training, testing))
-            # results_5.append(self.sim_measure(training, testing, weight_type='none'))
-            # results_6.append(self.sim_measure(training, testing, method='max'))
-        # print evaluate_results(flatten(results_1))
-        print evaluate_results(flatten(results_2))
-        # print evaluate_results(flatten(results_3))
-        # print evaluate_results(flatten(results_4))
-        # print evaluate_results(flatten(results_5))
-        # print evaluate_results(flatten(results_6))
-        self.clear_cache()
+            positions.append(self.sim_measure(training, testing, **kwargs))
+        return flatten(positions)
 
 
 for f in glob.glob('./relations/capitals.txt'):
-    print f
     our_set = RelationSet.create_from_file(f)
+    #our_set.run_sim_test()
     candidates = our_set.spatial_candidates()
     relations = our_set.relations
-    for i in xrange(20):
+    for i in xrange(1):
         i = i+1
         results = list()
-        for j in xrange(100):
+        for j in xrange(1):
             random.shuffle(relations)
             training = RelationSet(relations[0:i])
             testing = RelationSet(relations[-5:])
-            res = our_set.sim_measure(training, testing, candidates, distance='euclidean', weight_type='none')
-            results.append(res)
-        print i, evaluate_results(flatten(results))
+            print len(training), len(testing)
+            positions = our_set.sim_measure(training, testing, candidates, distance='euclidean', weight_type='none')
+            results.append(positions)
+        print i, print_vector_stats(flatten(results))

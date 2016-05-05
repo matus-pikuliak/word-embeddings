@@ -1,7 +1,7 @@
 import math
 import random
-
-
+from helper import *
+print_vector_stats([1,2,3,5,9], verbose=False)
 exit()
 
 # capitals 1460237289
