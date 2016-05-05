@@ -1,3 +1,6 @@
+from libraries import *
+from helper import *
+
 class Result:
     """
     One result from our experiment consisting of pair, its score, position
@@ -46,7 +49,7 @@ class ResultList:
         Sorts results in result list and assigns them positions starting with 1.
         :return: None
         """
-        self.results_list = sorted(self.results_list, key=lambda result: -result.score)
+        self.results_list = sorted(self.results_list, key=lambda result: -result.ndcg_score)
         for i in xrange(len(self)):
             self[i].position = i + 1
 
@@ -76,6 +79,122 @@ class ResultList:
         self.sort()
         for i in xrange(n):
             print self[i].name
+
+    def print_top_n_to_file(self, n, filename):
+        """
+        Prints names of top n results to file called filename in accordance with out result file format.
+        See readme for more details.
+        :param n: integer
+        :param filename: string
+        :return: None
+        """
+        self.sort()
+        for i in xrange(n):
+            with open(filename, 'w+') as f:
+                f.write("?\t%s" % self[i].name)
+
+
+class ResultFile:
+
+    def __init__(self, filename):
+        """
+        Processes file with results. Each line is transformed to list with two values:
+        1. starting letter 2. name of pair (e.g. ['r', 'Paris-France'])
+        :param filename: string
+        """
+        self.records = []
+        with open(filename, 'r') as f:
+            for line in f:
+                self.records.append(line.strip().split('\t'))
+
+    def __len__(self):
+        return len(self.records)
+
+    def is_correct(self, index):
+        """
+        Checks if i-th record in file is correct
+        :param index: integer
+        :return: True or False
+        """
+        return self.records[index][0].startswith('r')
+
+    def is_partially_correct(self, index):
+        """
+        Checks if i-th record in file is partially correct
+        :param index: integer
+        :return: True or False
+        """
+        return self.records[index][0].startswith('p')
+
+    def is_incorrect(self, index):
+        """
+        Checks if i-th record in file is incorrect
+        :param index: integer
+        :return: True or False
+        """
+        return self.records[index][0].startswith('w')
+
+    def correct_count(self):
+        """
+        Counts how many records in file are correct
+        :return: integer
+        """
+        return len([i for i in xrange(len(self)) if self.is_correct(i)])
+
+    def partially_correct_count(self):
+        """
+        Counts how many records in file are partially correct
+        :return: integer
+        """
+        return len([i for i in xrange(len(self)) if self.is_partially_correct(i)])
+
+    def incorrect_count(self):
+        """
+        Counts how many records in file are incorrect
+        :return: integer
+        """
+        return len([i for i in xrange(len(self)) if self.is_incorrect(i)])
+
+    @staticmethod
+    def ndcg_score(relevancy, position):
+        return relevancy / math.log(position+1, 2)
+
+    def idcg(self):
+        return sum([self.ndcg_score(1,pos+1) for pos in xrange(len(self))])
+
+    def dcg(self):
+        scores = []
+        for i in xrange(len(self)):
+            relevancy = 0
+            if self.is_correct(i):
+                relevancy = 1
+            if self.is_partially_correct(i):
+                relevancy = 0.5
+            scores.append(self.ndcg_score(relevancy, i+1))
+        return sum(scores)
+
+    def ndcg(self):
+        return self.dcg() / self.idcg()
+
+    def similarity(self, other_record_file):
+        words = [record[1] for record in self.records]
+        common_words = [record[1] for record in other_record_file.records if record[1] in words]
+        return float(len(common_words)) / len(self)
+
+    def average_word_occurence_count(self):
+        words = flatten([record[1].split('-') for record in self.records])
+        print np.mean(Counter(words).values())
+
+    def precision_at_k(self):
+        correct = 0
+        results = []
+        for i in xrange(len(self)):
+            if self.is_correct(i) or self.is_partially_correct(i):
+                correct += 1
+            results.append([i+1, correct])
+        return results
+
+
 
 
 

@@ -19,7 +19,7 @@ def svm_file(timestamp):
     with open(predict_file) as f:
         i = 0
         for line in f:
-            results[i].score = float(line)
+            results[i].ndcg_score = float(line)
             i += 1
     return results
 
