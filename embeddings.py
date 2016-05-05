@@ -1,59 +1,14 @@
 from libraries import *
 import results_helper as res
-import config
-from helper import *
+import svm_helper as svm
 
-def file_path(filename):
-    return '%s%s' % (config.svm_folder, filename)
-
-
-def svm_file(timestamp):
-    test_file = glob.glob("%s*%s-test*" % (config.svm_folder, timestamp))[0]
-    predict_file = glob.glob("%s*%s-prediction*" % (config.svm_folder, timestamp))[0]
-    results = res.ResultList()
-    with open(test_file) as f:
-        for line in f:
-            positive = (line.split()[0] == '1')
-            name = line.split('#')[1].strip()
-            results.append(is_positive=positive, name=name)
-    with open(predict_file) as f:
-        i = 0
-        for line in f:
-            results[i].ndcg_score = float(line)
-            i += 1
-    return results
-
-
-def get_timestamp(string):
-    return re.match('%s[a-z]*-([0-9]*).*' % config.svm_folder, string).group(1)
-
-def evaluate_svm_files(name):
-    files = glob.glob('%s%s*prediction*' % (config.svm_folder, name))
-    timestamps = [get_timestamp(filename) for filename in files]
-    positions = flatten([svm_file(timestamp).positive_positions() for timestamp in timestamps])
-    print_vector_stats(positions)
-
-evaluate_svm_files('capitals')
-exit()
-
-
-
-
-# for f in glob.glob('./relations/*.txt'):
-#     name = re.match('.*/([a-z]*).txt',f).group(1)
-#     print name
-#     evaluate_svm_files(name)
-
-
-def svm_transform(l):
-    return ' '.join(["%d:%f" % (i+1, l[i]) for i in xrange(len(l))])
 
 top100k = set()
 with open('./wiki-100k.txt') as f:
     for line in f:
         if not line.startswith('#'):
             top100k.add(line.strip())
-model = Word2Vec.load_word2vec_format('/media/piko/Decko/bcp/dp-data/GoogleNews-vectors-negative300.bin', binary=True, selected_words=top100k)
+model = Word2Vec.load_word2vec_format(config.word2vec_file, binary=True, selected_words=top100k)
 
 embeddings = dict()
 def emb(word=None, vector=None):
@@ -116,7 +71,7 @@ class Embedding:
         return [emb(record[0]) for record in model.most_similar(self.word, topn=n)]
 
     def svm_sim_transform(self, relations):
-        return svm_transform([self.euclidean_similarity(rel.rel_embedding) for rel in relations])
+        return svm.svm_transform_vector([self.euclidean_similarity(rel.rel_embedding) for rel in relations])
 
 
 class Relation:
@@ -145,7 +100,7 @@ class Relation:
         return [Relation(e_1, e_2, candidate=True) for e_1 in ng_1 for e_2 in ng_2 if e_1 != e_2]
 
     def svm_standard_transform(self):
-        return '%d %s # %s' % (self.svm_target(), svm_transform(self.rel_embedding.v), self.rel_embedding.word)
+        return '%d %s # %s' % (self.svm_target(), svm.svm_transform_vector(self.rel_embedding.v), self.rel_embedding.word)
 
     def svm_sim_transform(self, relations):
         return '%d %s # %s' % (self.svm_target(), self.rel_embedding.svm_sim_transform(relations), self.rel_embedding.word)
@@ -293,10 +248,10 @@ class RelationSet:
         examples = self.relations[0::2]
         training = self.relations[1::2]
         timestamp = int(time.time())
-        train_filename = file_path('%s-%d-train-sim_svm' % (name,timestamp))
-        model_filename = file_path('%s-%d-model-sim_svm' % (name,timestamp))
-        test_filename = file_path('%s-%d-test-sim_svm' % (name,timestamp))
-        prediction_filename = file_path('%s-%d-prediction-sim_svm' % (name,timestamp))
+        train_filename = svm.svm_file_name(name, timestamp, 'train')
+        model_filename = svm.svm_file_name(name, timestamp, 'model')
+        test_filename = svm.svm_file_name(name, timestamp, 'test')
+        prediction_filename = svm.svm_file_name(name, timestamp, 'prediction')
         open(train_filename, "wb").write('\n'.join([rel.svm_sim_transform(examples) for rel in training + candidates]))
         open(test_filename, "wb").write('\n'.join([rel.svm_sim_transform(examples) for rel in candidates]))
         os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))

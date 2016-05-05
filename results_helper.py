@@ -1,5 +1,4 @@
 from libraries import *
-from helper import *
 
 class Result:
     """
@@ -49,7 +48,7 @@ class ResultList:
         Sorts results in result list and assigns them positions starting with 1.
         :return: None
         """
-        self.results_list = sorted(self.results_list, key=lambda result: -result.ndcg_score)
+        self.results_list = sorted(self.results_list, key=lambda result: -result.score)
         for i in xrange(len(self)):
             self[i].position = i + 1
 
