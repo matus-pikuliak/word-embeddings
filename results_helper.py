@@ -1,6 +1,7 @@
 from libraries import *
 
 class Result:
+
     """
     One result from our experiment consisting of pair, its score, position
     and information about whether it is positive or not.
@@ -24,6 +25,11 @@ class Result:
 
 
 class ResultList:
+
+    """
+    List of Results from given experiment. It contains numerous Results and it is capable of working them,
+    e.g. sorting them and printing them.
+    """
 
     def __init__(self):
         self.results_list = []
@@ -69,7 +75,7 @@ class ResultList:
             positions[i] -= i
         return positions
 
-    def print_top_n(self, n):
+    def print_top_n(self, n=100):
         """
         Prints names of top n results in our result list.
         :param n: integer
@@ -94,6 +100,11 @@ class ResultList:
 
 
 class ResultFile:
+
+    """
+    This class is an interface to result files. See readme for details about these files.
+    This class is capable of loading these files and calculating different statitics about them.
+    """
 
     def __init__(self, filename):
         """

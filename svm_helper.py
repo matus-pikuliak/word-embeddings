@@ -12,7 +12,7 @@ def svm_file_name(set_name, timestamp, file_type):
     :param file_type: string
     :return: string
     """
-    return "%s%s-%d-%s-svm" % (config.svm_folder, set_name, timestamp, file_type)
+    return "%s%s-%s-%s-svm" % (config.svm_folder, set_name, timestamp, file_type)
 
 
 def svm_timestamp_to_results(timestamp):

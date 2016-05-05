@@ -43,3 +43,17 @@ def print_vector_stats(vec, verbose=True):
         print "median: %f\tstd: %f\tmean: %f" % output
     else:
         print "%f\t%f\t%f" % output
+
+
+def top100k():
+    """
+    Processes the file with selected words. The file has one word on each line.
+    Lines starting with '#' are considered comments.
+    :return: set of strings
+    """
+    top100k_set = set()
+    with open('./wiki-100k.txt') as f:
+        for line in f:
+            if not line.startswith('#'):
+                top100k_set.add(line.strip())
+    return top100k_set
