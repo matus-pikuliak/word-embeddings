@@ -2,7 +2,7 @@ from libraries import *
 
 def flatten(l):
     """
-    Takes all the elements from list l and extract them to returned array
+    Take all the elements from list l and extract them to returned array
     :param l: list of lists
     :return: list
     """
@@ -24,4 +24,20 @@ def normalize_list(l):
     :param l: list of numbers
     :return: list
     """
-    return [x / sum(l) for x in l]
+    return [item / sum(l) for item in l]
+
+
+def split(l, split_proportion):
+    """
+    Split the list l into testing and training set. testing_proportion is indicating what proportion
+    of the original set l will be used as testing items.
+    :param l: list
+    :param testing_proportion: float <0,1>
+    :return: tuple of two lists
+    """
+    size = int(len(l) * split_proportion)
+    if size < 1 or (len(l) - size) < 1:
+        raise AttributeError('One of the sets has non-positive size.')
+    shuffled = list(l)
+    random.shuffle(shuffled)
+    return shuffled[0:size], shuffled[size:]

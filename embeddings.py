@@ -175,26 +175,6 @@ class RelationSet:
     def __len__(self):
         return len(self.relations)
 
-    def testing_slices(self):
-        n = 5  # number of slices
-        shuffled_relations = list(self.relations)
-        random.shuffle(shuffled_relations)
-        slices = self.slice_list(shuffled_relations, n)
-        parted_slices = [self.part_slices(slices, i) for i in xrange(n)]
-        return [(RelationSet(part[0]), RelationSet(part[1])) for part in parted_slices]
-
-    @staticmethod
-    def slice_list(l, n):
-        n = max(1, n)
-        return [l[i::n] for i in xrange(n)]
-
-    @staticmethod
-    def part_slices(slices, i):
-        testing_set = slices[i]
-        training_slices = slices[:i] + slices[i+1:]
-        training_set = flatten(training_slices)
-        return testing_set, training_set
-
     def spatial_candidates(self, filter_positives=True):
         preliminary_candidates = flatten([rel.spatial_candidates() for rel in self.relations])
         keys = set([rel.word() for rel in self.relations]) if filter_positives else set()
@@ -333,6 +313,10 @@ class RelationSet:
         os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
         os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
 
+    def testing_and_training_set(self, testing_proportion):
+        testing_pairs, training_pairs = split(self.relations, testing_proportion)
+        return RelationSet(testing_pairs), RelationSet(training_pairs)
+
     def run_sim_test(self):
         print datetime.datetime.now()
         results_1 = []
@@ -342,7 +326,7 @@ class RelationSet:
         results_5 = []
         results_6 = []
         for _ in xrange(20):
-            testing, training = self.testing_slices()[0]
+            testing, training = self.testing_and_training_set(0.2)
             # results_1.append(self.sim_measure(training, testing, distance='euclidean'))
             results_2.append(self.sim_measure(training, testing, distance='euclidean', weight_type='none'))
             # results_3.append(self.sim_measure(training, testing, distance='euclidean', weight_type='normalized'))
