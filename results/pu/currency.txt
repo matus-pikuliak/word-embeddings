@@ -2,7 +2,7 @@ r	Norway-krone
 w	Romania-forint
 w	Poland-forint
 r	U.S.-dollar
-p-m	Sweden-krone
+w	Sweden-krone
 p-m	India-rupees
 w	Hungary-leu
 w	Belarus-hryvnia

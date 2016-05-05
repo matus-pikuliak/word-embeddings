@@ -1,25 +1,9 @@
-from gensim.models import Word2Vec
-from scipy.spatial import distance
-import numpy as np
-import os, time, random, re, glob, datetime
-
-data_folder = '/media/piko/Decko/bcp/dp-data/python-files/new_predictions_cos/'
+from libraries import *
+from helper import *
+from config import *
 
 def file_path(filename):
-    return '%s%s' % (data_folder, filename)
-
-# name = 'capitals'
-# timestamp = 1461631305
-# train_filename = file_path('%s-%d-train-sim_svm' % (name, timestamp))
-# model_filename = file_path('%s-%d-model-sim_svm' % (name, timestamp))
-# test_filename = file_path('%s-%d-test-sim_svm' % (name, timestamp))
-# prediction_filename = file_path('%s-%d-prediction-sim_svm' % (name, timestamp))
-# os.system('./svm-perf/svm_perf_learn -l 10 -c 0.01 -w 3 %s %s' % (train_filename, model_filename))
-# os.system('./svm-perf/svm_perf_classify %s %s %s' % (test_filename, model_filename, prediction_filename))
-# exit()
-
-def flatten(l):
-    return [item for sublist in l for item in sublist]
+    return '%s%s' % (svm_folder, filename)
 
 
 def process_results(results):
@@ -37,8 +21,8 @@ def evaluate_results(results):
 
 
 def svm_file(timestamp, average=True, topn=None):
-    test_file = glob.glob("%s*%s-test*" % (data_folder, timestamp))[0]
-    predict_file = glob.glob("%s*%s-prediction*" % (data_folder, timestamp))[0]
+    test_file = glob.glob("%s*%s-test*" % (svm_folder, timestamp))[0]
+    predict_file = glob.glob("%s*%s-prediction*" % (svm_folder, timestamp))[0]
     records = list()
     with open(test_file) as f:
         for line in f:
@@ -50,27 +34,18 @@ def svm_file(timestamp, average=True, topn=None):
         for line in f:
             records[i][2] = float(line)
             i += 1
-    return records
-
-#SVM TOP 100
-# cities 1461626389
-# currency 1461625101
-# capitals 1461627217
-# gender 1461623867
-records = svm_file('1461623867')
-results = sorted(records, key=lambda x: -x[2])
-results = [res for res in results if res[0] is False]
-for i in xrange(100):
-    print "?\t%s" % results[i][1]
-exit()
+    records = sorted(records, key=lambda x: -x[2])
+    records = [res for res in records if res[0] is False]
+    for i in xrange(100):
+        print "?\t%s" % records[i][1]
 
 
 def get_timestamp(string):
-        return re.match('%s[a-z]*-([0-9]*).*' % data_folder, string).group(1)
+        return re.match('%s[a-z]*-([0-9]*).*' % svm_folder, string).group(1)
 
 
 def evaluate_svm_files(name):
-    print evaluate_results(flatten([process_results(svm_file(get_timestamp(f))) for f in glob.glob('%s%s*train*' % (data_folder, name))]))
+    print evaluate_results(flatten([process_results(svm_file(get_timestamp(f))) for f in glob.glob('%s%s*train*' % (svm_folder, name))]))
 
 
 # for f in glob.glob('./relations/*.txt'):
@@ -96,40 +71,38 @@ def emb(word=None, vector=None):
     return embeddings[word]
 
 
-class Embedding:
+cosines = dict()
+def cosine_similarity(emb_1, emb_2):
+    if emb_2 in cosines and emb_1 in cosines[emb_2]:
+        return cosines[emb_2][emb_1]
+    if emb_1 in cosines and emb_2 in cosines[emb_1]:
+        return cosines[emb_1][emb_2]
+    if emb_1 not in cosines:
+        cosines[emb_1] = dict()
+    cosine_value = -distance.cosine(emb_1.v, emb_2.v) / 2 + 1
+    cosines[emb_1][emb_2] = cosine_value
+    return cosine_value
 
-    cosines = dict()
-    euclideans = dict()
+euclideans = dict()
+def euclidean_similarity(emb_1, emb_2):
+    if emb_2 in euclideans and emb_1 in euclideans[emb_2]:
+        return euclideans[emb_2][emb_1]
+    if emb_1 in euclideans and emb_2 in euclideans[emb_1]:
+        return euclideans[emb_1][emb_2]
+    if emb_1 not in euclideans:
+        euclideans[emb_1] = dict()
+    euclidean_value = 1 / (1 + distance.euclidean(emb_1.v, emb_2.v))
+    euclideans[emb_1][emb_2] = euclidean_value
+    return euclidean_value
+
+
+class Embedding:
 
     def __init__(self, word=None, vector=None):
         if vector is None and word is None:
             raise KeyError('You have to state word or vector')
         self.v = model[word] if vector is None else vector
         self.word = word
-
-    def cosine_similarity(self, embedding):
-        if self in self.cosines and embedding in self.cosines[self]:
-            return self.cosines[self][embedding]
-        if self not in self.cosines:
-            self.cosines[self] = dict()
-        cosine_value = self.cosine_computation(embedding)
-        self.cosines[self][embedding] = cosine_value
-        return cosine_value
-
-    def cosine_computation(self, embedding):
-        return -distance.cosine(self.v, embedding.v) / 2 + 1
-
-    def euclidean_similarity(self, embedding):
-        if self in self.euclideans and embedding in self.euclideans[self]:
-            return self.euclideans[self][embedding]
-        if self not in self.euclideans:
-            self.euclideans[self] = dict()
-        euclidean_value = self.euclidean_computation(embedding)
-        self.euclideans[self][embedding] = euclidean_value
-        return euclidean_value
-
-    def euclidean_computation(self, embedding):
-        return 1 / (1 + distance.euclidean(self.v, embedding.v))
 
     def __len__(self):
         return len(self.v)
@@ -170,10 +143,10 @@ class Relation:
         return self.rel_embedding.word
 
     def cosine_similarity(self, relation):
-        return self.rel_embedding.cosine_similarity(relation.rel_embedding)
+        return cosine_similarity(self.rel_embedding, relation.rel_embedding)
 
     def euclidean_similarity(self, relation):
-        return self.rel_embedding.euclidean_similarity(relation.rel_embedding)
+        return euclidean_similarity(self.rel_embedding, relation.rel_embedding)
 
     def spatial_candidates(self):
         ng_1 = self.e_1.neighbours()
@@ -241,23 +214,17 @@ class RelationSet:
             raise KeyError('Wrong distance parameter')
         return (sum(similarities) - 1) / (len(similarities) - 1)
 
-    @staticmethod
-    def softmax_list(l):
-        return np.exp(l) / np.sum(np.exp(l), axis=0)
+    def sim_measure(self, training, testing, candidates=None, method='average', weight_type='softmax', distance='cosine'):
 
-    @staticmethod
-    def normalize_list(l):
-        return [x/sum(l) for x in l]
-
-    def sim_measure(self, training, testing, method='average', weight_type='softmax', distance='cosine'):
-        candidates = training.spatial_candidates()
+        if candidates is None:
+            candidates = training.spatial_candidates()
 
         if weight_type == 'none':
             weights = [float(1)/len(training) for _ in xrange(len(training))]
         elif weight_type == 'normalized':
-            weights = self.normalize_list([training.rel_weight(rel, distance) for rel in training.relations])
+            weights = normalize_list([training.rel_weight(rel, distance) for rel in training.relations])
         elif weight_type == 'softmax':
-            weights = self.softmax_list([training.rel_weight(rel, distance) for rel in training.relations])
+            weights = softmax_list([training.rel_weight(rel, distance) for rel in training.relations])
         else:
             raise KeyError('Wrong weight_type parameter')
 
@@ -322,7 +289,7 @@ class RelationSet:
             relations = map(create_relation, pairs)
             return RelationSet(relations, filename=filename)
 
-    def check_candidate_presence(self, size):
+    def seed_recall(self, size, interesting_relations=None):
         candidates_words = set()
         for rel in self.relations:
             ng_1 = [record[0] for record in model.most_similar(rel.e_1.word, topn=size)]
@@ -330,9 +297,11 @@ class RelationSet:
             for word in ["%s-%s" % (e_1, e_2) for e_1 in ng_1 for e_2 in ng_2 if e_1 != e_2]:
                 candidates_words.add(word)
         present = 0
-        for rel in self.relations:
+        if interesting_relations is None:
+            interesting_relations = self.relations
+        for rel in interesting_relations:
             present += 1 if rel.word() in candidates_words else 0
-        return float(present) / len(self)
+        return float(present) / len(interesting_relations)
 
     def spatial_candidates_size(self, size):
         candidates_words = set()
@@ -345,8 +314,8 @@ class RelationSet:
 
     @staticmethod
     def clear_cache():
-        Embedding.cosines.clear()
-        Embedding.euclideans.clear()
+        cosines.clear()
+        euclideans.clear()
         embeddings.clear()
 
     def find_new_svm(self):
@@ -372,44 +341,35 @@ class RelationSet:
         results_4 = []
         results_5 = []
         results_6 = []
-        for _ in xrange(5):
+        for _ in xrange(20):
             testing, training = self.testing_slices()[0]
-            results_1.append(self.sim_measure(training, testing, distance='euclidean'))
+            # results_1.append(self.sim_measure(training, testing, distance='euclidean'))
             results_2.append(self.sim_measure(training, testing, distance='euclidean', weight_type='none'))
-            results_3.append(self.sim_measure(training, testing, distance='euclidean', weight_type='normalized'))
-            results_4.append(self.sim_measure(training, testing))
-            results_5.append(self.sim_measure(training, testing, weight_type='none'))
-            results_6.append(self.sim_measure(training, testing, method='max'))
-        print evaluate_results(flatten(results_1))
+            # results_3.append(self.sim_measure(training, testing, distance='euclidean', weight_type='normalized'))
+            # results_4.append(self.sim_measure(training, testing))
+            # results_5.append(self.sim_measure(training, testing, weight_type='none'))
+            # results_6.append(self.sim_measure(training, testing, method='max'))
+        # print evaluate_results(flatten(results_1))
         print evaluate_results(flatten(results_2))
-        print evaluate_results(flatten(results_3))
-        print evaluate_results(flatten(results_4))
-        print evaluate_results(flatten(results_5))
-        print evaluate_results(flatten(results_6))
+        # print evaluate_results(flatten(results_3))
+        # print evaluate_results(flatten(results_4))
+        # print evaluate_results(flatten(results_5))
+        # print evaluate_results(flatten(results_6))
         self.clear_cache()
 
-import random
-for f in glob.glob('./relations/capitals.txt'):
-    our_set = RelationSet.create_from_file(f)
-    our_set.find_new_simple_svm()
-    # for n in range(10, 200, 10):
-    #     print "%s" % (our_set.check_candidate_presence(n))
-    # print f
-    #
-    #     our_set.clear_cache()
-    # sp = our_set.spatial_candidates()
-    # candidates = set([rel.word() for rel in sp])
-    # records = svm_file('1460235363')
-    # records = [rec for rec in records if rec[1] in candidates]
-    # results = sorted(records, key=lambda x: -x[2])
-    # for i in xrange(100):
-    #     print results[i][1]
-    # for i in xrange(len(results)):
-    #     results[i][3] = i+1
-    # with open('sim-family.txt','w+') as f:
-    #     f.write('\n'.join(["%d\t%f" % (res[3], res[2]) for res in results]))
 
-#for f in glob.glob('./relations/currency.txt'):
-    # print f
-    # our_set = RelationSet.create_from_file(f)
-    # our_set.find_new_svm()
+for f in glob.glob('./relations/capitals.txt'):
+    print f
+    our_set = RelationSet.create_from_file(f)
+    candidates = our_set.spatial_candidates()
+    relations = our_set.relations
+    for i in xrange(20):
+        i = i+1
+        results = list()
+        for j in xrange(100):
+            random.shuffle(relations)
+            training = RelationSet(relations[0:i])
+            testing = RelationSet(relations[-5:])
+            res = our_set.sim_measure(training, testing, candidates, distance='euclidean', weight_type='none')
+            results.append(res)
+        print i, evaluate_results(flatten(results))
