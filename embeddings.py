@@ -63,13 +63,13 @@ class Embedding:
         name = "%s-%s" % (embedding.word, self.word)
         return embedding_object(vector=vector, word=name)
 
-    def neighbours(self, n=100):
+    def neighbours(self, size=100):
         """
         Finds of given word neighbours with size n in vector space. Returns list of words.
-        :param n: integer
+        :param size: integer
         :return: list of strings
         """
-        return [embedding_object(record[0]) for record in model.most_similar(self.word, topn=n)]
+        return [embedding_object(record[0]) for record in model.most_similar(self.word, topn=size)]
 
 
 class Pair:
@@ -123,13 +123,13 @@ class Pair:
         """
         return data.euclidean_similarity(self.pair_embedding, pair.pair_embedding)
 
-    def spatial_candidates(self):
+    def spatial_candidates(self, size=100):
         """
         Generates candidates for this given pair as product of neighborhood of its two embeddings.
         :return: list of Pairs
         """
-        ng_1 = self.e_1.neighbours()
-        ng_2 = self.e_2.neighbours()
+        ng_1 = self.e_1.neighbours(size)
+        ng_2 = self.e_2.neighbours(size)
         return [Pair(e_1, e_2, candidate=True) for e_1 in ng_1 for e_2 in ng_2 if e_1 != e_2]
 
     def svm_transform(self, pairs, distance='euclidean'):
@@ -137,7 +137,7 @@ class Pair:
         Transforms given pairs to SVM sample with values calculated as similarities to given pairs with given distance.
         :param pairs: list of Pairs
         :param distance: 'euclidean' or 'cosine'
-        :return: string in SVM sample format. See readme for details.
+        :return: string in SVM sample format. See README for details.
         """
         label = self.svm_label()
         values = self.svm_values(pairs, distance)
@@ -150,7 +150,7 @@ class Pair:
         E.g. "1:0.255 2:0.133 3:0.445" etc
         :param pairs: list of Pairs
         :param distance: 'euclidean' or 'cosine'
-        :return: string in SVM sample values format. See readme for details.
+        :return: string in SVM sample values format. See README for details.
         """
         if distance == 'euclidean':
             vec = [self.euclidean_similarity(pair) for pair in pairs]
@@ -159,6 +159,10 @@ class Pair:
         return svm.svm_transform_vector(vec)
 
     def svm_label(self):
+        """
+        Generates the SVM label for pair. This label is 1 for positive and -1 for unlabeled samples
+        :return: 1 or -1
+        """
         if self.positive:
             return 1
         if self.candidate:
@@ -167,32 +171,55 @@ class Pair:
 
 
 class PairSet:
+    
+    """
+    This class represents set of pairs, usually seed set used to generate new pairs. It can calculate various metrics
+    concerning such sets as well as generate new pairs in accordance with our method.
+    """
 
     def __init__(self, pairs, filename=None):
+        """
+        filename is a path to file, if the set was created from one.
+        :param pairs: list of Pairs 
+        :param filename: string
+        """
         self.set_pairs = pairs
         self.filename = filename
 
     @classmethod
-    def create_from_file(cls, filename, capitalize=False):
-        def create_pair_object(pair):
-            return Pair(embedding_object(pair[0]), embedding_object(pair[1]), positive=True)
-
-        def capitalize_line(pair):
-            return map(str.capitalize, pair)
-
+    def create_from_file(cls, filename):
+        """
+        Takes files in our input format (see README) and transforms it into PairSet object.
+        :param filename: string
+        :return: 
+        """
         with open(filename) as f:
             pairs = [line.strip().split() for line in f]
-            if capitalize:
-                pairs = map(capitalize_line, pairs)
-            seed_pairs = map(create_pair_object, pairs)
+            seed_pairs = [Pair(embedding_object(pair[0]), embedding_object(pair[1]), positive=True) for pair in pairs]
             return PairSet(seed_pairs, filename=filename)
 
     def __len__(self):
+        """
+        Number of pairs in set.
+        :return: integer
+        """
         return len(self.set_pairs)
 
-    def spatial_candidates(self, filter_positives=True):
-        all_candidates = flatten([pair.spatial_candidates() for pair in self.set_pairs])
+    def spatial_candidates(self, size=100, filter_positives=True):
+        """
+        Generates candidates in accordance to the proposal of our method. Candidates are calculates as a union
+        of candidates generated from individual pairs (see Pair.spatial_candidates()). Candidates
+        identical with positive pairs are removed if filter_positives is True.
+        :param size: integer
+        :param filter_positives: True or False
+        :return: list of Pairs
+        """
+        all_candidates = flatten([pair.spatial_candidates(size) for pair in self.set_pairs])
+
+        # Embeddings of positive pairs are added so they don't end up in final set of candidates if filter_positives is True
         keys = set([pair.pair_embedding for pair in self.set_pairs]) if filter_positives else set()
+
+        # Candidates are filtered so each pair is unique.
         candidates = list()
         for candidate in all_candidates:
             if candidate.pair_embedding not in keys:
@@ -200,34 +227,81 @@ class PairSet:
                 candidates.append(candidate)
         return candidates
 
-    def spatial_candidates_size(self, size=100):
+    def spatial_candidates_words(self, size=100, filter_positives=True):
+        """
+        Faster way of generating candidates. Instead of Pairs objects only string with the name
+        of given pair are generated (e.g. 'Paris-France'). Candidates
+        identical with positive pairs are removed if filter_positives is True.
+        :param size: integer
+        :return: list of strings
+        """
         candidates_words = set()
         for rel in self.set_pairs:
             ng_1 = [record[0] for record in model.most_similar(rel.e_1.word, topn=size)]
             ng_2 = [record[0] for record in model.most_similar(rel.e_2.word, topn=size)]
             for word in ["%s-%s" % (e_1, e_2) for e_1 in ng_1 for e_2 in ng_2 if e_1 != e_2]:
                 candidates_words.add(word)
-            for word in ["%s-%s" % (pair.e_1.word, pair.e_2.word) for pair in self.set_pairs]:
-                if word in candidates_words:
-                    candidates_words.remove(word)
-        return len(candidates_words)
+            if filter_positives:
+                for word in ["%s-%s" % (pair.e_1.word, pair.e_2.word) for pair in self.set_pairs]:
+                    if word in candidates_words:
+                        candidates_words.remove(word)
+        return candidates_words
+
+    def spatial_candidates_size(self, size=100):
+        """
+        Quickly returns number of candidates generated from Set.
+        :param size: integer
+        :return: integer
+        """
+        return len(self.spatial_candidates_words(size))
 
     def pair_weight(self, pair, distance='euclidean'):
+        """
+        Calculates the weight of Pair in PairSet as an average of similarities to the rest of the pairs in Set.
+        :param pair: Pair
+        :param distance: 'euclidean' or 'cosine'
+        :return: float
+        """
         if distance == 'euclidean':
             similarities = [pair.euclidean_similarity(other_pair) for other_pair in self.set_pairs]
         elif distance == 'cosine':
             similarities = [pair.cosine_similarity(other_pair) for other_pair in self.set_pairs]
         else:
             raise KeyError('Wrong distance parameter')
+
+        # -1 and -1 because the pair itself is in self.set_pairs skewing the results
         return (sum(similarities) - 1) / (len(similarities) - 1)
 
-    def comparative_algorithm(self, training=None, testing=None, candidates=None, method='average',
-                              weight_type='softmax', distance='euclidean', **kwargs):
+    def comparative_algorithm(self,
+                              seed=None,
+                              testing=None,
+                              candidates=None,
+                              method='average',
+                              weight_type='softmax',
+                              distance='euclidean',
+                              **kwargs):
+        """
+        Calculates comparative algorithms from out method on given data. It rates list of candidates based on their
+        similarity to seed set. If seed is not set, self is the seed. If candidates are not set,
+        they are generated from seed. If testing is set, it is added to candidates as positive samples
+        to control how they are rated. Method is returning ResultList object so it can be later printed or evaluated.
+        Method is 'max' or 'avg' saying how are similarities with seed set handled.
+        Weight_type is 'none ', 'normalize' or 'softmax' and it says how are similarities normalizes.
+        Distance is 'cosine' or 'euclidean' and it says what kind of similarity is used in computations.
+        :param seed:        PairSet
+        :param testing:     PairSet
+        :param candidates:  list of Pairs
+        :param method:      'avg' or 'max'
+        :param weight_type: 'none', 'normalized' or 'softmax'
+        :param distance:    'cosine' or 'euclidean'
+        :param kwargs:      ...
+        :return:            res.ResultList
+        """
 
-        if training is None:
-            training = self
+        if seed is None:
+            seed = self
         if candidates is None:
-            candidates = training.spatial_candidates()
+            candidates = seed.spatial_candidates()
 
         results = res.ResultList()
         evaluated = candidates
@@ -235,11 +309,11 @@ class PairSet:
             evaluated += testing.set_pairs
 
         if weight_type == 'none':
-            weights = [float(1)/len(training) for _ in xrange(len(training))]
+            weights = [float(1)/len(seed) for _ in xrange(len(seed))]
         elif weight_type == 'normalized':
-            weights = normalize_list([training.pair_weight(pair, distance) for pair in training.set_pairs])
+            weights = normalize_list([seed.pair_weight(pair, distance) for pair in seed.set_pairs])
         elif weight_type == 'softmax':
-            weights = softmax_list([training.pair_weight(pair, distance) for pair in training.set_pairs])
+            weights = softmax_list([seed.pair_weight(pair, distance) for pair in seed.set_pairs])
         else:
             raise KeyError('Wrong weight_type parameter')
 
@@ -247,15 +321,15 @@ class PairSet:
             positive = pair.positive
             name = pair.word()
             if distance == 'cosine':
-                similarities = [pair.cosine_similarity(training_pair) for training_pair in training.set_pairs]
+                similarities = [pair.cosine_similarity(seed_pair) for seed_pair in seed.set_pairs]
             elif distance == 'euclidean':
-                similarities = [pair.euclidean_similarity(training_pair) for training_pair in training.set_pairs]
+                similarities = [pair.euclidean_similarity(seed_pair) for seed_pair in seed.set_pairs]
             else:
                 raise KeyError('Wrong distance parameter')
 
             if method == 'max':
                 final_similarity = max(similarities)
-            elif method == 'average':
+            elif method == 'avg':
                 final_similarity = sum([
                         weights[i] * similarities[i]
                         for i in xrange(len(similarities))
@@ -266,7 +340,27 @@ class PairSet:
             results.append(is_positive=positive,name=name,score=final_similarity)
         return results
 
-    def pu_learning(self, training=None, testing=None, candidates=None, distance='euclidean', **kwargs):
+    def pu_learning(self,
+                    training=None,
+                    testing=None,
+                    candidates=None,
+                    distance='euclidean',
+                    **kwargs):
+        """
+        Calculates comparative algorithms from out method on given data. If seed is not set, it is calculated over
+        self. Seed is used as a set of pairs used to rate other pairs. If candidates are not set,
+        they are generated from seed. If testing is set, it is added to candidates as positive samples
+        to control how they are rated. Method is returning ResultList object so it can be later printed or evaluated.
+        Method is 'max' or 'avg' saying how are similarities with seed set handled.
+        Weight_type is 'none ', 'normalize' or 'softmax' and it says how are similarities normalizes.
+        Distance is 'cosine' or 'euclidean' and it says what kind of similarity is used in computations.
+        :param seed:        PairSet
+        :param testing:     PairSet
+        :param candidates:  list of Pairs
+        :param distance:    'cosine' or 'euclidean'
+        :param kwargs:      ...
+        :return:            res.ResultList
+        """
         if training is None:
             training = self
         if candidates is None:
@@ -275,7 +369,6 @@ class PairSet:
         if testing is not None:
             evaluated += testing.set_pairs
         candidates = self.spatial_candidates()
-        random.shuffle(training.set_pairs)
         examples = training.set_pairs[0::2]
         positive = training.set_pairs[1::2]
 
@@ -295,26 +388,33 @@ class PairSet:
         return svm.svm_timestamp_to_results(timestamp)
 
     def find_new_pairs(self, n=100, **kwargs):
-        if kwargs['method'] == 'max' or kwargs['method'] == 'average':
+        if kwargs['method'] == 'max' or kwargs['method'] == 'avg':
             results = self.comparative_algorithm(**kwargs)
         if kwargs['method'] == 'pu':
             results = self.pu_learning(**kwargs)
         results.print_top_n_to_file(n, config.output_file)
 
+    def seed_recall(self, size=100, interesting_pairs=None):
+        """
+        Calculates the seed recall metric of given set. Details about this metric is in the proposal of our method.
+        interesting_relations can be used to check for other pair than the pairs in our set. This can be used
+        in different experiments. Size can be used to control size of neighborhood used for generating candidates.
+        :param size: integer
+        :param interesting_pairs: list of Pairs
+        :return: float
+        """
+        if interesting_pairs is None:
+            interesting_pairs = self.set_pairs
+        candidates_words = self.spatial_candidates_words(size, filter_positives=False)
+        present = len([1 for pair in interesting_pairs if pair.word() in candidates_words])
+        return float(present) / len(interesting_pairs)
 
-    def seed_recall(self, size, interesting_relations=None):
-        candidates_words = set()
-        for rel in self.set_pairs:
-            ng_1 = [record[0] for record in model.most_similar(rel.e_1.word, topn=size)]
-            ng_2 = [record[0] for record in model.most_similar(rel.e_2.word, topn=size)]
-            for word in ["%s-%s" % (e_1, e_2) for e_1 in ng_1 for e_2 in ng_2 if e_1 != e_2]:
-                candidates_words.add(word)
-        present = 0
-        if interesting_relations is None:
-            interesting_relations = self.set_pairs
-        for rel in interesting_relations:
-            present += 1 if rel.word() in candidates_words else 0
-        return float(present) / len(interesting_relations)
+    def get_positions(self, repeat=20, **kwargs):
+        positions = []
+        for _ in xrange(repeat):
+            testing, training = self.testing_and_training_set(0.2)
+            positions.append(self.sim_measure(training, testing, **kwargs))
+        return flatten(positions)
 
     def testing_and_training_set(self, testing_proportion):
         """
@@ -331,16 +431,9 @@ class PairSet:
         random.shuffle(shuffled)
         return PairSet(shuffled[0:size]), PairSet(shuffled[size:])
 
-    def get_positions(self, **kwargs):
-        positions = []
-        for _ in xrange(50):
-            testing, training = self.testing_and_training_set(0.2)
-            positions.append(self.sim_measure(training, testing, **kwargs))
-        return flatten(positions)
-
 for f in glob.glob('./relations/capitals.txt'):
     our_set = PairSet.create_from_file(f)
-    our_set.find_new_pairs(method='pu')
+    print our_set.seed_recall()
     exit()
     #our_set.run_sim_test()
     candidates = our_set.spatial_candidates()

@@ -88,7 +88,7 @@ class ResultList:
     def print_top_n_to_file(self, n, filename):
         """
         Prints names of top n results to file called filename in accordance with out result file format.
-        See readme for more details.
+        See README for more details.
         :param n: integer
         :param filename: string
         :return: None
@@ -102,7 +102,7 @@ class ResultList:
 class ResultFile:
 
     """
-    This class is an interface to result files. See readme for details about these files.
+    This class is an interface to result files. See README for details about these files.
     This class is capable of loading these files and calculating different statitics about them.
     """
 
