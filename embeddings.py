@@ -3,6 +3,14 @@ import results_helper as res
 import svm_helper as svm
 import data_helper as data
 
+sets = ['comparative','knowledge','nationality','part','past_tense']
+dirs = ['euc','cos']
+for dir in dirs:
+    for rset in sets:
+        results = res.ResultFile('./results/%s/%s.txt' % (dir, rset))
+        print rset, dir, results.ndcg()
+
+exit()
 
 add_file_to_top100k('./relations/part.txt')
 """
@@ -279,7 +287,7 @@ class PairSet:
                               testing=None,
                               candidates=None,
                               method='average',
-                              weight_type='softmax',
+                              weight_type='none',
                               distance='euclidean',
                               **kwargs):
         """
@@ -343,7 +351,7 @@ class PairSet:
         return results
 
     def pu_learning(self,
-                    training=None,
+                    seed=None,
                     testing=None,
                     candidates=None,
                     distance='euclidean',
@@ -363,16 +371,16 @@ class PairSet:
         :param kwargs:      ...
         :return:            res.ResultList
         """
-        if training is None:
-            training = self
+        if seed is None:
+            seed = self
         if candidates is None:
-            candidates = training.spatial_candidates()
+            candidates = seed.spatial_candidates()
         evaluated = candidates
         if testing is not None:
             evaluated += testing.set_pairs
         candidates = self.spatial_candidates()
-        examples = training.set_pairs[0::2]
-        positive = training.set_pairs[1::2]
+        examples = seed.set_pairs[0::2]
+        positive = seed.set_pairs[1::2]
 
         name = re.match('.*/([a-z]*).txt',self.filename).group(1)
         timestamp = str(int(time.time()))
@@ -389,12 +397,20 @@ class PairSet:
 
         return svm.svm_timestamp_to_results(timestamp)
 
-    def find_new_pairs(self, n=100, **kwargs):
+    def find_new_pairs(self, n=100, filename=config.default_output_file, **kwargs):
+        """
+        Finds new pairs from given set and prints them to file. N is number of results printed to file called filename.
+        kwargs must contain method attribute with values 'max', 'avg' or 'pu'. Details about other attributes in kwargs
+        can bee seen in pu_learning() and comparative_algorithm() methods.
+        :param n: integer
+        :param filename: string
+        :param kwargs: algorithm parameters
+        :return: None
+        """
         if kwargs['method'] == 'max' or kwargs['method'] == 'avg':
             results = self.comparative_algorithm(**kwargs)
         if kwargs['method'] == 'pu':
             results = self.pu_learning(**kwargs)
-        filename = kwargs['filename'] if 'filename' in kwargs else config.output_file
         results.print_top_n_to_file(n, filename)
 
     def seed_recall(self, size=100, interesting_pairs=None):
@@ -412,12 +428,28 @@ class PairSet:
         present = len([1 for pair in interesting_pairs if pair.word() in candidates_words])
         return float(present) / len(interesting_pairs)
 
-    def get_positions(self, repeat=20, **kwargs):
+    def positions_testing(self, repeat=20, **kwargs):
+        """
+        Tests positions on which the positive samples are rated in sorted set of candidates. Details about this metric
+        is in the proposal of our method. Repeat says how many times should the experiment repeat, the more the more
+        precise are the results. However this experiment is very timely. Kwargs must contain method attribute
+        with value 'avg', 'max' or 'pu'. Details about other attributes in kwargs
+        can bee seen in pu_learning() and comparative_algorithm() methods.
+        :param repeat: integer
+        :param kwargs: algorithm parameters
+        :return: None
+        """
         positions = []
+        candidates = self.spatial_candidates()
         for _ in xrange(repeat):
             testing, training = self.testing_and_training_set(0.2)
-            positions.append(self.sim_measure(training, testing, **kwargs))
-        return flatten(positions)
+            if kwargs['method'] == 'max' or kwargs['method'] == 'avg':
+                results = self.comparative_algorithm(seed=training, testing=testing, candidates=candidates, **kwargs)
+            if kwargs['method'] == 'pu':
+                results = self.pu_learning(seed=training, testing=testing, candidates=candidates, **kwargs)
+            positions.append(results.positive_positions())
+        print flatten(positions)
+        print_vector_stats(flatten(positions))
 
     def testing_and_training_set(self, testing_proportion):
         """
@@ -434,8 +466,10 @@ class PairSet:
         random.shuffle(shuffled)
         return PairSet(shuffled[0:size]), PairSet(shuffled[size:])
 
-for f in glob.glob('./relations/part.txt'):
+for f in glob.glob('./relations/capitals.txt'):
     our_set = PairSet.create_from_file(f)
+    positions = our_set.positions_testing(method='avg')
+    exit()
     our_set.find_new_pairs(method='avg', distance='euclidean', weight_type='none', filename='part_euc.txt')
     our_set.find_new_pairs(method='avg', distance='cosine', weight_type='none', filename='part_cos.txt')
     data.clear_cache()
