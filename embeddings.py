@@ -3,6 +3,8 @@ import results_helper as res
 import svm_helper as svm
 import data_helper as data
 
+
+
 """
 model variable is containg word2vec model of natural language. The file containing the vectors is defined in config.
 """
@@ -347,13 +349,13 @@ class PairSet:
                     distance='euclidean',
                     **kwargs):
         """
-        Calculates comparative algorithms from out method on given data. If seed is not set, it is calculated over
+        Calculates PU Learning algorithms from out method on given data. If seed is not set, it is calculated over
         self. Seed is used as a set of pairs used to rate other pairs. If candidates are not set,
         they are generated from seed. If testing is set, it is added to candidates as positive samples
         to control how they are rated. Method is returning ResultList object so it can be later printed or evaluated.
-        Method is 'max' or 'avg' saying how are similarities with seed set handled.
-        Weight_type is 'none ', 'normalize' or 'softmax' and it says how are similarities normalizes.
         Distance is 'cosine' or 'euclidean' and it says what kind of similarity is used in computations.
+
+        SVM files are created while calculating this method. Each set of SVM files has unique timestamp that ties them together.
         :param seed:        PairSet
         :param testing:     PairSet
         :param candidates:  list of Pairs
@@ -433,7 +435,9 @@ class PairSet:
 
 for f in glob.glob('./relations/capitals.txt'):
     our_set = PairSet.create_from_file(f)
-    print our_set.seed_recall()
+    our_set.find_new_pairs(method='avg', distance='euclidean', weight_type='none')
+    our_set.find_new_pairs(method='avg', distance='cosine', weight_type='none')
+    data.clear_cache()
     exit()
     #our_set.run_sim_test()
     candidates = our_set.spatial_candidates()

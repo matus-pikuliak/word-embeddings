@@ -1,6 +1,6 @@
-from gensim.models import Word2Vec
 from scipy.spatial import distance
 import numpy as np
+from lib.gensim_word2vec import Word2Vec
 import os
 import time
 import random
