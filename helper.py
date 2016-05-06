@@ -57,3 +57,18 @@ def top100k():
             if not line.startswith('#'):
                 top100k_set.add(line.strip())
     return top100k_set
+
+
+def add_word_to_top100k(word):
+    with open('./wiki-100k.txt', 'a') as f:
+        f.write("\n" + word)
+
+
+def add_file_to_top100k(filename):
+    top100k_set = top100k()
+    with open(filename) as f:
+        for line in f:
+            for word in line.strip().split():
+                if word not in top100k_set:
+                    add_word_to_top100k(word)
+

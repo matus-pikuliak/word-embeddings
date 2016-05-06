@@ -4,7 +4,7 @@ import svm_helper as svm
 import data_helper as data
 
 
-
+add_file_to_top100k('./relations/part.txt')
 """
 model variable is containg word2vec model of natural language. The file containing the vectors is defined in config.
 """
@@ -394,7 +394,8 @@ class PairSet:
             results = self.comparative_algorithm(**kwargs)
         if kwargs['method'] == 'pu':
             results = self.pu_learning(**kwargs)
-        results.print_top_n_to_file(n, config.output_file)
+        filename = kwargs['filename'] if 'filename' in kwargs else config.output_file
+        results.print_top_n_to_file(n, filename)
 
     def seed_recall(self, size=100, interesting_pairs=None):
         """
@@ -433,10 +434,10 @@ class PairSet:
         random.shuffle(shuffled)
         return PairSet(shuffled[0:size]), PairSet(shuffled[size:])
 
-for f in glob.glob('./relations/capitals.txt'):
+for f in glob.glob('./relations/part.txt'):
     our_set = PairSet.create_from_file(f)
-    our_set.find_new_pairs(method='avg', distance='euclidean', weight_type='none')
-    our_set.find_new_pairs(method='avg', distance='cosine', weight_type='none')
+    our_set.find_new_pairs(method='avg', distance='euclidean', weight_type='none', filename='part_euc.txt')
+    our_set.find_new_pairs(method='avg', distance='cosine', weight_type='none', filename='part_cos.txt')
     data.clear_cache()
     exit()
     #our_set.run_sim_test()
