@@ -39,10 +39,12 @@ def print_vector_stats(vec, verbose=True):
     std = float(np.std(vec))
     mean = float(np.mean(vec))
     output = (median, std, mean)
-    if verbose:
-        print "median: %f\tstd: %f\tmean: %f" % output
-    else:
-        print "%f\t%f\t%f" % output
+    with open('./output2','a') as f:
+        if verbose:
+            f.write("median: %f\tstd: %f\tmean: %f" % output)
+        else:
+            f.write("%f\t%f\t%f" % output)
+        f.write('\n')
 
 
 def top100k():

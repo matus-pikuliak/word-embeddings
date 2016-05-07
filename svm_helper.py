@@ -1,5 +1,5 @@
 from libraries import *
-import results_helper as res
+import result_file as res
 
 
 def svm_file_name(set_name, timestamp, file_type):
