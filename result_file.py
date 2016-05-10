@@ -1,5 +1,6 @@
 from libraries import *
 
+
 class ResultFile:
 
     """
@@ -81,7 +82,7 @@ class ResultFile:
         Calculates ideal DCG score for virtual set of the same size.
         :return: float
         """
-        return sum([self.ndcg_score(1,pos+1) for pos in xrange(len(self))])
+        return sum([self.ndcg_score(1, pos+1) for pos in xrange(len(self))])
 
     def dcg(self):
         """
@@ -140,6 +141,4 @@ class ResultFile:
                 correct += 1
             results.append((i+1, correct))
         return results
-
-
 

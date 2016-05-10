@@ -62,11 +62,7 @@ def euclidean_similarity(emb_1, emb_2):
 
 def clear_cache():
     """
-    Calculates cosine similarity between emb_1 and emb_2 Embedding objects. It will store the calculations
-    and if the same embeddings are compared again it will return this saved result.
-    :param emb_1: Embedding
-    :param emb_2: Embedding
-    :return: float
+    Clears all cached data.
     """
     global embeddings, cosines, euclideans
     embeddings = dict()

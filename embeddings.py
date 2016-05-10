@@ -122,7 +122,7 @@ class Pair:
 
     def cosine_similarity(self, pair):
         """
-        Cosine similarity between self and some other pair. It is using data heler to cache results.
+        Cosine similarity between self and some other pair. It is using data helper to cache results.
         :param pair: Pair
         :return: float
         """
@@ -130,7 +130,7 @@ class Pair:
 
     def euclidean_similarity(self, pair):
         """
-        Euclidean similarity between self and some other pair. It is using data heler to cache results.
+        Euclidean similarity between self and some other pair. It is using data helper to cache results.
         :param pair: Pair
         :return: float
         """
@@ -157,7 +157,7 @@ class Pair:
         comment = self.word()
         return '%d %s # %s' % (label, values, comment)
 
-    def svm_values(self, pairs, distance):
+    def svm_values(self, pairs, distance='euclidean'):
         """
         Creates the values for SVM sample. These values are the similarities themselves numbered from 1 upwards.
         E.g. "1:0.255 2:0.133 3:0.445" etc
@@ -208,7 +208,12 @@ class PairSet:
         """
         with open(filename) as f:
             pairs = [line.strip().split() for line in f]
-            seed_pairs = [Pair(embedding_object(pair[0]), embedding_object(pair[1]), positive=True) for pair in pairs]
+            seed_pairs = list()
+            for pair in pairs:
+                if pair[0] in model and pair[1] in model:
+                    seed_pairs.append(Pair(embedding_object(pair[0]), embedding_object(pair[1]), positive=True))
+                else:
+                    print "%s or %s is not in word embeddings model." % (pair[0], pair[1])
             return PairSet(seed_pairs, filename=filename)
 
     def __len__(self):
@@ -260,14 +265,6 @@ class PairSet:
                         candidates_words.remove(word)
         return candidates_words
 
-    def spatial_candidates_size(self, size=100):
-        """
-        Quickly returns number of candidates generated from Set.
-        :param size: integer
-        :return: integer
-        """
-        return len(self.spatial_candidates_words(size))
-
     def pair_weight(self, pair, distance='euclidean'):
         """
         Calculates the weight of Pair in PairSet as an average of similarities to the rest of the pairs in Set.
@@ -308,7 +305,7 @@ class PairSet:
         :param weight_type: 'none', 'normalized' or 'softmax'
         :param distance:    'cosine' or 'euclidean'
         :param kwargs:      ...
-        :return:            rResultList
+        :return:            ResultList
         """
 
         if seed is None:
@@ -400,7 +397,7 @@ class PairSet:
 
         return svm.svm_timestamp_to_results(timestamp)
 
-    def find_new_pairs(self, n=100, filename=config.default_output_file, **kwargs):
+    def find_new_pairs(self, n=100, filename=config.default_output_file, method='avg', **kwargs):
         """
         Finds new pairs from given set and prints them to file. N is number of results printed to file called filename.
         kwargs must contain method attribute with values 'max', 'avg' or 'pu'. Details about other attributes in kwargs
@@ -410,10 +407,10 @@ class PairSet:
         :param kwargs: algorithm parameters
         :return: None
         """
-        if kwargs['method'] == 'max' or kwargs['method'] == 'avg':
-            results = self.comparative_algorithm(**kwargs)
-        if kwargs['method'] == 'pu':
-            results = self.pu_learning(**kwargs)
+        if method == 'max' or method == 'avg':
+            results = self.comparative_algorithm(method=method, **kwargs)
+        if method == 'pu':
+            results = self.pu_learning(method=method, **kwargs)
         results.print_top_n_to_file(n, filename)
 
     def seed_recall(self, size=100, interesting_pairs=None):
@@ -431,7 +428,7 @@ class PairSet:
         present = len([1 for pair in interesting_pairs if pair.word() in candidates_words])
         return float(present) / len(interesting_pairs)
 
-    def positions_testing(self, repeat=10, **kwargs):
+    def positions_testing(self, repeat=10, method='avg', **kwargs):
         """
         Tests positions on which the positive samples are rated in sorted set of candidates. Details about this metric
         is in the proposal of our method. Repeat says how many times should the experiment repeat, the more the more
@@ -439,6 +436,7 @@ class PairSet:
         with value 'avg', 'max' or 'pu'. Details about other attributes in kwargs
         can bee seen in pu_learning() and comparative_algorithm() methods.
         :param repeat: integer
+        :param mmethod: 'avg', 'pu' or 'max'
         :param kwargs: algorithm parameters
         :return: None
         """
@@ -446,10 +444,10 @@ class PairSet:
         candidates = self.spatial_candidates()
         for _ in xrange(repeat):
             testing, training = self.testing_and_training_set(0.2)
-            if kwargs['method'] == 'max' or kwargs['method'] == 'avg':
-                results = self.comparative_algorithm(seed=training, testing=testing, candidates=candidates, **kwargs)
-            if kwargs['method'] == 'pu':
-                results = self.pu_learning(seed=training, testing=testing, candidates=candidates, **kwargs)
+            if method == 'max' or method == 'avg':
+                results = self.comparative_algorithm(seed=training, testing=testing, candidates=candidates, method=method, **kwargs)
+            if method == 'pu':
+                results = self.pu_learning(seed=training, testing=testing, candidates=candidates, method=method, **kwargs)
             positions.append(results.positive_positions())
         positions = flatten(positions)
         print_vector_stats(positions)
@@ -569,65 +567,4 @@ class ResultList:
             for i in xrange(n):
                 f.write("?\t%s\n" % self[i].name)
 
-
-# for f in glob.glob('./relations/capitals.txt'):
-#     our_set = PairSet.create_from_file(f)
-#     our_set.positions_testing(method='pu')
-#     our_set.positions_testing(method='pu', distance='cosine')
-#     our_set.positions_testing(method='max')
-#     our_set.positions_testing(method='avg')
-#     our_set.positions_testing(method='avg', distance='cosine')
-#     our_set.positions_testing(method='avg', weight_type='softmax')
-#     data.clear_cache()
-#
-# for f in glob.glob('./relations/currency.txt'):
-#     our_set = PairSet.create_from_file(f)
-#     our_set.positions_testing(method='pu')
-#     our_set.positions_testing(method='pu', distance='cosine')
-#     our_set.positions_testing(method='max')
-#     our_set.positions_testing(method='avg')
-#     our_set.positions_testing(method='avg', distance='cosine')
-#     our_set.positions_testing(method='avg', weight_type='softmax')
-#     data.clear_cache()
-
-
-for f in glob.glob('./relations/cities.txt'):
-    our_set = PairSet.create_from_file(f)
-    our_set.positions_testing(method='max')
-    our_set.positions_testing(method='avg')
-    our_set.positions_testing(method='pu')
-    our_set.positions_testing(method='pu', distance='cosine')
-    our_set.positions_testing(method='avg', distance='cosine')
-    our_set.positions_testing(method='avg', weight_type='softmax')
-    data.clear_cache()
-
-for f in glob.glob('./relations/family.txt'):
-    our_set = PairSet.create_from_file(f)
-    our_set.positions_testing(method='max')
-    our_set.positions_testing(method='avg')
-    our_set.positions_testing(method='pu')
-    our_set.positions_testing(method='pu', distance='cosine')
-    our_set.positions_testing(method='avg', distance='cosine')
-    our_set.positions_testing(method='avg', weight_type='softmax')
-    data.clear_cache()
-
-
-    # exit()
-    # our_set.find_new_pairs(method='avg', distance='euclidean', weight_type='none', filename='part_euc.txt')
-    # our_set.find_new_pairs(method='avg', distance='cosine', weight_type='none', filename='part_cos.txt')
-    # data.clear_cache()
-    # exit()
-    # #our_set.run_sim_test()
-    # candidates = our_set.spatial_candidates()
-    # relations = our_set.relations
-    # for i in xrange(10):
-    #     i = i+1
-    #     results = list()
-    #     for j in xrange(1):
-    #         random.shuffle(relations)
-    #         training = RelationSet(relations[0:i])
-    #         testing = RelationSet(relations[-5:])
-    #         print len(training), len(testing)
-    #         positions = our_set.sim_measure(training, testing, candidates, distance='euclidean', weight_type='none')
-    #         results.append(positions)
-    #     print i, print_vector_stats(flatten(results))
+PairSet.create_from_file('./relations/capitals.txt')
