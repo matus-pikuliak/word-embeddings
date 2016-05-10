@@ -289,6 +289,7 @@ class PairSet:
                               method='avg',
                               weight_type='none',
                               distance='euclidean',
+                              neighborhood=100,
                               **kwargs):
         """
         Calculates comparative algorithms from out method on given data. It rates list of candidates based on their
@@ -296,14 +297,16 @@ class PairSet:
         they are generated from seed. If testing is set, it is added to candidates as positive samples
         to control how they are rated. Method is returning ResultList object so it can be later printed or evaluated.
         Method is 'max' or 'avg' saying how are similarities with seed set handled.
-        Weight_type is 'none ', 'normalize' or 'softmax' and it says how are similarities normalizes.
+        Weight_type is 'none ', 'standard' or 'softmax' and it says how are similarities normalizes.
         Distance is 'cosine' or 'euclidean' and it says what kind of similarity is used in computations.
+        Neighborhood says about how many neighbors are considered when generating candidates.
         :param seed:        PairSet
         :param testing:     PairSet
         :param candidates:  list of Pairs
         :param method:      'avg' or 'max'
-        :param weight_type: 'none', 'normalized' or 'softmax'
+        :param weight_type: 'none', 'standard' or 'softmax'
         :param distance:    'cosine' or 'euclidean'
+        :param neighborhood: int
         :param kwargs:      ...
         :return:            ResultList
         """
@@ -311,7 +314,7 @@ class PairSet:
         if seed is None:
             seed = self
         if candidates is None:
-            candidates = seed.spatial_candidates()
+            candidates = seed.spatial_candidates(size=neighborhood)
 
         results = ResultList()
         evaluated = list(candidates)
@@ -320,7 +323,7 @@ class PairSet:
 
         if weight_type == 'none':
             weights = [float(1)/len(seed) for _ in xrange(len(seed))]
-        elif weight_type == 'normalized':
+        elif weight_type == 'standard':
             weights = normalize_list([seed.pair_weight(pair, distance) for pair in seed.set_pairs])
         elif weight_type == 'softmax':
             weights = softmax_list([seed.pair_weight(pair, distance) for pair in seed.set_pairs])
@@ -355,6 +358,7 @@ class PairSet:
                     testing=None,
                     candidates=None,
                     distance='euclidean',
+                    neighborhood=100,
                     **kwargs):
         """
         Calculates PU Learning algorithms from out method on given data. If seed is not set, it is calculated over
@@ -362,23 +366,24 @@ class PairSet:
         they are generated from seed. If testing is set, it is added to candidates as positive samples
         to control how they are rated. Method is returning ResultList object so it can be later printed or evaluated.
         Distance is 'cosine' or 'euclidean' and it says what kind of similarity is used in computations.
+        Neighborhood says about how many neighbors are considered when generating candidates.
 
         SVM files are created while calculating this method. Each set of SVM files has unique timestamp that ties them together.
         :param seed:        PairSet
         :param testing:     PairSet
         :param candidates:  list of Pairs
         :param distance:    'cosine' or 'euclidean'
+        :param neighborhood: int
         :param kwargs:      ...
         :return:            ResultList
         """
         if seed is None:
             seed = self
         if candidates is None:
-            candidates = seed.spatial_candidates()
+            candidates = seed.spatial_candidates(size=neighborhood)
         evaluated = list(candidates)
         if testing is not None:
             evaluated += testing.set_pairs
-        candidates = self.spatial_candidates()
         examples = seed.set_pairs[0::2]
         positive = seed.set_pairs[1::2]
 
@@ -397,13 +402,13 @@ class PairSet:
 
         return svm.svm_timestamp_to_results(timestamp)
 
-    def find_new_pairs(self, n=100, filename=config.default_output_file, method='avg', **kwargs):
+    def find_new_pairs(self, result_count=100, output=config.default_output_file, method='avg', **kwargs):
         """
-        Finds new pairs from given set and prints them to file. N is number of results printed to file called filename.
-        kwargs must contain method attribute with values 'max', 'avg' or 'pu'. Details about other attributes in kwargs
-        can bee seen in pu_learning() and comparative_algorithm() methods.
-        :param n: integer
-        :param filename: string
+        Finds new pairs from given set and prints them to file. result_count is number of results printed to file
+        with a name set by parameter output. method is name of rating method: 'max', 'avg' or 'pu'.
+        Details about other attributes in kwargs are in pu_learning() and comparative_algorithm() methods.
+        :param result_count: integer
+        :param output: string
         :param kwargs: algorithm parameters
         :return: None
         """
@@ -411,7 +416,7 @@ class PairSet:
             results = self.comparative_algorithm(method=method, **kwargs)
         if method == 'pu':
             results = self.pu_learning(method=method, **kwargs)
-        results.print_top_n_to_file(n, filename)
+        results.print_top_n_to_file(result_count, output)
 
     def seed_recall(self, size=100, interesting_pairs=None):
         """
