@@ -11,6 +11,19 @@ We are using *word embeddings* technique of distributional semantic modeling.
 
 ## Installation
 
+### Prerequisites
+
+* *gensim* library
+* *numpy* and *scipy* libraries (they are also prerequisites of gensim so you should have them installed already)
+
+### Configuration
+
 ## Usage
 
+
+
 ## File formats
+
+input
+ouput
+100k
