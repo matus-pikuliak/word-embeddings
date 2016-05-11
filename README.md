@@ -71,3 +71,23 @@ set_recall = seed_set.seed_recall()
 
 ## Results
 
+Result files have similar format to input files. There is however correctness flag at the start of the line:
+```
+?    Russia Moscow
+?    Germany Paris
+?    London England
+```
+When the file is generated the flag is set to *?*. Human evaulator can change these flags to:
+
+* **r** - if given pair is correct
+* **p** - if it is partially correct
+* **w** - if it is incorrect
+ 
+After such evaluation we can process this file with *ResultFile* class and obtain several statistic about the succes rate of our method:
+
+```python
+import result_file as resf
+result_file = resf.ResultFile(output_file)
+ndcg = result_file.ndcg()
+```
+
