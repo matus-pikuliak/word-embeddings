@@ -6,11 +6,11 @@ This *seed* set can be for example:
 
 > France-Paris, Italy-Rome, Germany-Berlin
 
-Our goal here would be to find new pairs of countries and their respective capitals.
+Our goal here would be to find new pairs of countries and their respective capitals. Details about this method can be found in [the thesis](thesis.pdf) (in Slovak). We hope we can provide accepted article in English soon.
 
 ## Installation
 
-### Prerequisites
+#### 1. Prerequisites
 
 You need to have these libraries installed to run this library. We are indicating versions we are using.
 
@@ -18,7 +18,7 @@ You need to have these libraries installed to run this library. We are indicatin
 * *[gensim](https://radimrehurek.com/gensim/)* (0.12.4) library
 * *NumPy* (1.11.0) and *SciPy* (0.13.3) libraries (they are also prerequisites of *gensim* so you should have them installed already)
 
-### Configuration
+#### 2. Configuration
 
 You can configure several options in our *config.py* file:
 
@@ -28,7 +28,25 @@ You can configure several options in our *config.py* file:
 
 ## Usage
 
+Method can be accesed through command line by invoking *method.py* file:
 
+```
+> python ./method.py input_file [options]
+```
+
+Input file is a text file where there is one pairs of exemplary words on each line (examples are in *relations* folder in this repo), e.g.:
+
+```
+France Paris
+Germany Berlin
+Spain Madrid
+```
+
+The options are:
+
+```
+
+```
 
 ## File formats
 
