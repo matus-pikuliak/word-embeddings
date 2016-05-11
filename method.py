@@ -5,7 +5,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("input",
                     help="filename of seed set file")
 parser.add_argument("-o", dest='output',
-                    help="filename of seed set file")
+                    help="filename where results will be written")
 parser.add_argument("-t", dest='result_count',
                     type=int, default=100,
                     help="number of results returned")
