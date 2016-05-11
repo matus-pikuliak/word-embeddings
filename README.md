@@ -6,4 +6,11 @@ This *seed* set can be for example:
 
 > France-Paris, Italy-Rome, Germany-Berlin
 
-when we want to define relationship between countries and their capitals.
+Our goal here would be to find new pairs of countries and their respective capitals.
+We are using *word embeddings* technique of distributional semantic modeling.
+
+## Installation
+
+## Usage
+
+## File formats
