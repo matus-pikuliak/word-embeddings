@@ -31,7 +31,9 @@ You can configure several options in our *config.py* file:
 Method can be accesed through command line by invoking *method.py* file:
 
 ```
-> python ./method.py input_file [options]
+usage: method.py [-h] [-o OUTPUT] [-t RESULT_COUNT] [-m {1,2,3}]
+                 [-n NEIGHBORHOOD] [-d {1,2}] [-s {1,2,3}]
+                 input_file
 ```
 
 Input file is a text file where there is one pairs of exemplary words on each line (examples are in *relations* folder in this repo), e.g.:
@@ -45,11 +47,27 @@ Spain Madrid
 The options are:
 
 ```
+positional arguments:
+  input_file      filename of seed set file
 
+optional arguments:
+  -h, --help       show this help message and exit
+  -o OUTPUT        filename where results will be written
+  -t RESULT_COUNT  number of results returned
+  -m {1,2,3}       rating method (1 - avg, 2 - max, 3 - pu)
+  -n NEIGHBORHOOD  number of neighbours selected when generating candidates
+  -d {1,2}         similarity measure (1 - euclidean, 2 - cosine)
+  -s {1,2,3}       normalization method applied to avg method (1 - none, 2 -
+                   standard, 3 - softmax)
 ```
 
-## File formats
+You can also calculate certain statistics from seed sets. These are also mentioned in more detail in the thesis. This code shows how can we work with seed sets in our library. **Warning:** Importing embeddings file will result in loading of word embeddings vector dataset. This could take up to several minutes depending on the size of dataset and the hardware.
 
-input
-ouput
-100k
+```python
+import embeddings as embs
+seed_set = embs.PairSet.create_from_file(input_file)
+set_recall = seed_set.seed_recall()
+```
+
+## Results
+
