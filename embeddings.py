@@ -571,5 +571,3 @@ class ResultList:
         with open(filename, 'w+') as f:
             for i in xrange(n):
                 f.write("?\t%s\n" % self[i].name)
-
-PairSet.create_from_file('./relations/capitals.txt')
